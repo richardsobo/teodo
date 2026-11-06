@@ -1902,3 +1902,93 @@ body {
     padding-right: 0;
   }
 }
+
+/* ---------- Kolo 5 ---------- */
+.detail-more.others {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 40px;
+}
+@media (max-width: 719px) {
+  .detail-more.others {
+    margin-top: 24px;
+    padding-top: 0;
+  }
+}
+
+/* popis: čistý text bez rámčeka, pohodlná dĺžka riadka */
+.desc-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  max-width: 62ch;
+}
+.desc-section p {
+  font-size: 14.5px;
+  line-height: 1.7;
+}
+.desc-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  margin-top: 8px;
+}
+.desc-toggle .i {
+  transition: transform 0.3s var(--ease);
+}
+.desc-toggle[aria-expanded="true"] .i {
+  transform: rotate(180deg);
+}
+
+/* poznámka: jemne modrý blok bez rámčeka – jasne odlíšený od popisu */
+.note-block {
+  border-radius: 16px;
+  background: rgba(77, 127, 238, 0.07);
+  padding: 14px 16px 16px;
+}
+.note-add.note-block {
+  display: flex;
+  width: 100%;
+  padding: 14px 16px;
+  transition: background 0.2s;
+}
+.note-add.note-block:hover {
+  background: rgba(77, 127, 238, 0.11);
+}
+
+/* súhrn cien nad grafom */
+.price-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.price-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.035);
+}
+.price-summary span {
+  font-size: 12px;
+}
+.price-summary strong {
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+@media (max-width: 719px) {
+  .price-summary > div {
+    padding: 9px 10px;
+  }
+  .price-summary strong {
+    font-size: 14.5px;
+  }
+}
+.chart-tip {
+  gap: 10px;
+}

@@ -71,7 +71,6 @@ export function ListingCard({ l, isNew }: { l: Listing; isNew: boolean }) {
   }
   return (
     <Link className={`card${dim ? " removed" : ""}${isNew ? " is-new" : ""}`} href={`/inzerat/${l.id}`} scroll={false}>
-      {isNew && <span className="new-dot" aria-label="Nová zmena" />}
       <Img src={l.images[0]} alt={l.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       <div className="meta">
         <div style={{ marginBottom: 8 }}>

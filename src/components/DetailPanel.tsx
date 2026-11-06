@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Icon } from "./Icon";
 import { ListingCard, TargetReachedChip } from "./ListingCard";
 import { EditListingDialog, NotifySettings } from "./ListingDialogs";
-import { PriceChart } from "./PriceChart";
+import { PriceChart, PriceSummary } from "./PriceChart";
 import { Dialog, Img, Popover, useEscape, useIsMobile, useScrollLock } from "./ui";
 import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-state";
@@ -300,6 +300,7 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
                     </span>
                   )}
                 </div>
+                <PriceSummary history={l.history} currency={l.currency} removed={removed} />
                 <PriceChart history={l.history} currency={l.currency} target={removed ? null : l.notify.target} until={l.removedAt} compact={mobile} />
                 <History l={l} />
                 <span className="faint" style={{ fontSize: 12.5, marginTop: -4 }}>
@@ -313,20 +314,13 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
               </section>
             )}
 
-            <section className="info-card" aria-label="Popis a poznámka">
-              {l.description && (
-                <>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    <h2 className="cap" style={{ margin: 0 }}>
-                      Popis z inzerátu
-                    </h2>
-                    <Description text={l.description} />
-                  </div>
-                  <hr className="divider" />
-                </>
-              )}
-              <Note l={l} />
-            </section>
+            {l.description && (
+              <section className="desc-section">
+                <h2 className="h3">Popis</h2>
+                <Description text={l.description} />
+              </section>
+            )}
+            <Note l={l} />
           </div>
         </div>
 
@@ -456,8 +450,9 @@ function Description({ text }: { text: string }) {
         </p>
       </div>
       {long && (
-        <button className="link" style={{ fontSize: 13, marginTop: 6 }} onClick={() => setOpen((o) => !o)} aria-expanded={open}>
-          {open ? "Skryť popis" : "Celý popis"}
+        <button className="link desc-toggle" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+          {open ? "Skryť popis" : "Zobraziť celý popis"}
+          <Icon name="chevronDown" size="s" style={{ width: 14, height: 14 }} />
         </button>
       )}
     </div>
@@ -515,7 +510,7 @@ function Note({ l }: { l: Listing }) {
 
   if (!editing && !l.note) {
     return (
-      <button className="note-add" onClick={() => setEditing(true)}>
+      <button className="note-add note-block" onClick={() => setEditing(true)}>
         <Icon name="plus" size="s" />
         Pridať poznámku
         <span className="faint only-desktop" style={{ fontWeight: 500, fontSize: 13 }}>
@@ -526,7 +521,7 @@ function Note({ l }: { l: Listing }) {
   }
   if (!editing) {
     return (
-      <div>
+      <div className="note-block">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, minHeight: 28 }}>
           <h2 className="cap" style={{ margin: 0, color: "var(--link)" }}>
             Moja poznámka
@@ -540,7 +535,7 @@ function Note({ l }: { l: Listing }) {
     );
   }
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+    <div className="note-block" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <label className="cap" htmlFor="note" style={{ color: "var(--link)" }}>
         Moja poznámka
       </label>
