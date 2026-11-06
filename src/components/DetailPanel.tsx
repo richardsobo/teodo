@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Icon } from "./Icon";
-import { ListingCard, ListingRow } from "./ListingCard";
+import { ListingCard } from "./ListingCard";
 import { EditListingDialog, NotifySettings } from "./ListingDialogs";
 import { PriceChart } from "./PriceChart";
 import { Dialog, Img, Popover, useEscape, useIsMobile, useScrollLock } from "./ui";
@@ -79,6 +79,28 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
   const ui = useUI();
   const mobile = useIsMobile();
   const [panel, setPanel] = useState<"" | "bell" | "edit">("");
+  const topRef = useRef<HTMLDivElement>(null);
+  const [topScrolled, setTopScrolled] = useState(false);
+
+  // lišta hore dostane sklo pri scrollovaní; fotka sa na mobile jemne posúva pod ňu
+  useEffect(() => {
+    const sc = topRef.current?.closest(".detail-scroll") as HTMLElement | null;
+    if (!sc) return;
+    let raf = 0;
+    const on = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const y = sc.scrollTop;
+        setTopScrolled(y > 12);
+        sc.style.setProperty("--py", `${Math.min(y, 400) * 0.35}px`);
+      });
+    };
+    sc.addEventListener("scroll", on, { passive: true });
+    return () => {
+      sc.removeEventListener("scroll", on);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
   const c = priceChange(l);
   const category = store.categories.find((x) => x.id === l.categoryId);
   const reached = targetReached(l);
@@ -112,14 +134,14 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
             <div className="notice notice-blue">
               <Icon name="edit" size="s" style={{ color: "var(--link)", marginTop: 2 }} />
               <span className="muted" style={{ flex: 1 }}>
-                Cenu na {l.source.domain} zatiaľ nevieme sledovať automaticky. Keď sa zmení, uprav ju a zapíšeme ju do histórie.
+                Cenu tohto inzerátu zatiaľ nevieme sledovať automaticky. Keď sa zmení, uprav ju a zapíšeme ju do histórie.
               </span>
             </div>
           )}
           {l.status === "pending" && (
             <div className="notice notice-blue" style={{ alignItems: "center" }}>
               <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} />
-              <span className="muted">Načítavame údaje z {l.source.domain}. Zvyčajne to trvá pár sekúnd.</span>
+              <span className="muted">Načítavame údaje inzerátu. Zvyčajne to trvá pár sekúnd.</span>
             </div>
           )}
         </div>
@@ -128,7 +150,7 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
   );
 
   const top = (
-    <div className="detail-top">
+    <div className={`detail-top${topScrolled ? " scrolled" : ""}`} ref={topRef}>
       {mobile ? (
         <button className="btn btn-icon photo-btn" onClick={onClose} aria-label="Späť na inzeráty" style={{ width: 40, height: 40 }}>
           <Icon name="back" size="s" />
@@ -220,7 +242,7 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
                 ) : (
                   "Bez kategórie"
                 )}
-                {l.location && ` · ${l.location}`} · {l.source.domain}
+                {l.location && ` · ${l.location}`}
               </span>
               <h1 id="d-title" style={{ margin: 0, fontSize: mobile ? 20 : 24, fontWeight: 400, lineHeight: 1.3, letterSpacing: "-.01em" }}>
                 {l.title}
@@ -249,28 +271,12 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
                   ) : (
                     l.history.length > 0 && <span className="chip chip-soft">Bez zmeny od pridania</span>
                   )}
-                  {c.isLowest && !removed && (
-                    <span className="chip chip-soft">
-                      <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#8CF0C6" }} />
-                      Najnižšia cena od pridania
-                    </span>
-                  )}
-                  {reached && <span className="chip chip-target">Cieľ dosiahnutý</span>}
+                  {reached && <TargetReachedChip />}
                 </div>
-                <span className="faint" style={{ fontSize: 12.5 }}>
-                  {l.lastCheckedAt
-                    ? `Naposledy skontrolované ${relativeTime(l.lastCheckedAt)}`
-                    : l.source.support === "manual"
-                      ? "Cenu dopĺňaš ručne"
-                      : "Ešte nekontrolované"}
-                  {!removed && l.source.support !== "manual" && ` · ďalšia kontrola o ${formatTime(nextCheckTime().toISOString())}`}
-                </span>
               </div>
             )}
 
-            {l.description && <Description text={l.description} />}
-
-            <a className="btn btn-primary detail-cta" href={l.url} target="_blank" rel="noopener noreferrer" style={{ alignSelf: "flex-start", marginTop: 4 }}>
+            <a className="btn btn-primary btn-lg detail-cta" href={l.url} target="_blank" rel="noopener noreferrer">
               <Icon name="external" size="s" />
               Zobraziť inzerát
             </a>
@@ -278,17 +284,39 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
 
             {l.history.length > 0 && (
               <section style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 20 }}>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                   <h2 className="h2">Vývoj ceny</h2>
-                  {l.notify.target != null && l.price != null && !removed && (
-                    <span style={{ fontSize: 13, color: "var(--link)" }}>
-                      Cieľ {formatPrice(l.notify.target, l.currency)}
-                      {l.price > l.notify.target && ` · chýba ${formatPrice(l.price - l.notify.target, l.currency)}`}
+                  {!removed && l.price != null && (
+                    <span style={{ fontSize: 13, display: "inline-flex", gap: 6, alignItems: "baseline" }}>
+                      {l.notify.target != null && (
+                        <span className="muted num">
+                          Cieľ {formatPrice(l.notify.target, l.currency)}
+                          {l.price > l.notify.target && ` · chýba ${formatPrice(l.price - l.notify.target, l.currency)}`}
+                        </span>
+                      )}
+                      <button className="link" data-popover-trigger onClick={() => setPanel("bell")} style={{ fontSize: 13 }}>
+                        {l.notify.target != null ? "Zmeniť" : "Nastaviť cieľovú cenu"}
+                      </button>
                     </span>
                   )}
                 </div>
                 <PriceChart history={l.history} currency={l.currency} target={removed ? null : l.notify.target} until={l.removedAt} compact={mobile} />
                 <History l={l} />
+                <span className="faint" style={{ fontSize: 12.5, marginTop: -4 }}>
+                  {l.lastCheckedAt
+                    ? `Naposledy skontrolované ${relativeTime(l.lastCheckedAt)}`
+                    : l.source.support === "manual"
+                      ? "Cenu dopĺňaš ručne"
+                      : "Ešte nekontrolované"}
+                  {!removed && l.source.support !== "manual" && ` · ďalšia kontrola o ${formatTime(nextCheckTime().toISOString())}`}
+                </span>
+              </section>
+            )}
+
+            {l.description && (
+              <section style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
+                <h2 className="h2">Popis</h2>
+                <Description text={l.description} />
               </section>
             )}
 
@@ -304,19 +332,11 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
                 Zobraziť všetky
               </Link>
             </div>
-            {mobile ? (
-              <div>
-                {others.map((o) => (
-                  <ListingRow key={o.id} l={o} isNew={false} />
-                ))}
-              </div>
-            ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }}>
-                {others.map((o) => (
-                  <ListingCard key={o.id} l={o} isNew={false} />
-                ))}
-              </div>
-            )}
+            <div className="grid others-grid">
+              {others.map((o) => (
+                <ListingCard key={o.id} l={o} isNew={false} />
+              ))}
+            </div>
           </section>
         )}
       </div>
@@ -549,5 +569,26 @@ function Note({ l }: { l: Listing }) {
         </button>
       </div>
     </div>
+  );
+}
+
+function TargetReachedChip() {
+  return (
+    <span className="chip chip-target">
+      <svg
+        viewBox="0 0 24 24"
+        width="12"
+        height="12"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="3.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M5 12l5 5 9-10" />
+      </svg>
+      Cieľ dosiahnutý
+    </span>
   );
 }

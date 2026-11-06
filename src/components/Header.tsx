@@ -124,19 +124,23 @@ export function Header() {
           </div>
         ) : user ? (
           <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 4 }}>
-            {onBoard && (
-              <button
-                className="btn btn-ghost btn-icon only-mobile"
-                aria-label="Hľadať"
-                aria-expanded={ui.searchOpen}
-                onClick={() => ui.setSearchOpen(!ui.searchOpen)}
-              >
-                <Icon name="search" />
-              </button>
-            )}
+            <button
+              className="btn btn-ghost btn-icon only-mobile"
+              aria-label="Hľadať"
+              aria-expanded={ui.searchOpen}
+              onClick={() => {
+                if (!onBoard) {
+                  ui.setSearchOpen(true);
+                  router.push("/prehlad");
+                } else ui.setSearchOpen(!ui.searchOpen);
+              }}
+            >
+              <Icon name="search" />
+            </button>
             {mobile ? (
               <Link
-                className="btn btn-ghost btn-icon"
+                key={unread}
+                className={`btn btn-ghost btn-icon${unread ? " bell-ring" : ""}`}
                 href="/upozornenia"
                 aria-label={unread ? `Upozornenia (${unread} nové)` : "Upozornenia"}
                 style={{ position: "relative" }}
@@ -146,7 +150,8 @@ export function Header() {
               </Link>
             ) : (
               <button
-                className="btn btn-ghost btn-icon"
+                key={unread}
+                className={`btn btn-ghost btn-icon${unread ? " bell-ring" : ""}`}
                 data-popover-trigger
                 aria-label={unread ? `Upozornenia (${unread} nové)` : "Upozornenia"}
                 aria-expanded={open === "notif"}
@@ -204,6 +209,7 @@ function UnreadDot() {
   return (
     <span
       aria-hidden="true"
+      className="unread-dot"
       style={{
         position: "absolute",
         top: 10,

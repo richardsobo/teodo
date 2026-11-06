@@ -37,7 +37,7 @@ export default function Landing() {
           </nav>
           <section className="board-main">
             <div>
-              <h1 className="h1">Všetky inzeráty</h1>
+              <h1 className="h1">Všetky sledované inzeráty</h1>
               <p className="faint" style={{ margin: "4px 0 0", fontSize: 14 }}>
                 0 inzerátov
               </p>

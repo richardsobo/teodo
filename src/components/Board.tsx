@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { CategoryNav, CategoryPills } from "./Categories";
 import { EmptyHero } from "./EmptyHero";
 import { Icon } from "./Icon";
-import { ListingCard, ListingRow } from "./ListingCard";
+import { ListingCard } from "./ListingCard";
 import { Dialog, Popover, useIsMobile } from "./ui";
 import { useStore } from "@/lib/store";
 import { useUI, type SortKey, type StateFilter } from "@/lib/ui-state";
@@ -51,7 +51,8 @@ export function Board() {
   const [filterOpen, setFilterOpen] = useState(false);
   const { listings, categories, isNew } = store;
 
-  const catName = ui.category === "all" ? "Všetky inzeráty" : ui.category === "none" ? "Bez kategórie" : categories.find((c) => c.id === ui.category)?.name;
+  const catName =
+    ui.category === "all" ? "Všetky sledované inzeráty" : ui.category === "none" ? "Bez kategórie" : categories.find((c) => c.id === ui.category)?.name;
   // kategória mohla medzitým zaniknúť
   const category = catName ? ui.category : "all";
 
@@ -118,25 +119,6 @@ export function Board() {
               {l}
             </button>
           ))}
-        </div>
-      </div>
-      <div>
-        <span className="label">Zobrazenie</span>
-        <div style={{ display: "flex", gap: 8 }}>
-          {(
-            [
-              ["grid", "Mriežka", "grid"],
-              ["list", "Zoznam", "rows"],
-            ] as const
-          ).map(([k, label, icon]) => {
-            const on = (ui.view === "auto" ? (mobile ? "list" : "grid") : ui.view) === k;
-            return (
-              <button key={k} className={`pill${on ? " on" : ""}`} aria-pressed={on} onClick={() => ui.setView(k)}>
-                <Icon name={icon} size="s" style={{ width: 15, height: 15 }} />
-                {label}
-              </button>
-            );
-          })}
         </div>
       </div>
       <button className="btn btn-primary btn-block" onClick={() => setFilterOpen(false)}>
@@ -258,23 +240,6 @@ export function Board() {
               resetFilter();
             }}
           />
-        ) : (ui.view === "auto" ? mobile : ui.view === "list") ? (
-          <motion.div layout className="list-view" style={{ marginTop: -8 }}>
-            <AnimatePresence initial={false}>
-              {items.shown.map((l) => (
-                <motion.div
-                  key={l.id}
-                  layout
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <ListingRow l={l} isNew={isNew(l)} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
         ) : (
           <motion.div layout className="grid">
             <AnimatePresence initial={false} mode="popLayout">
