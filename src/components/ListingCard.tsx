@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { Img } from "./ui";
 import { Icon } from "./Icon";
-import { changeLabel, chipClass, formatPrice, priceChange, relativeTime, targetReached } from "@/lib/format";
+import { changeLabel, chipClass, formatPrice, priceChange, targetReached } from "@/lib/format";
 import type { Listing } from "@/lib/types";
 
-function Chips({ l, isNew }: { l: Listing; isNew: boolean }) {
+function Chips({ l }: { l: Listing }) {
   const c = priceChange(l);
   const reached = targetReached(l);
   return (
@@ -22,12 +22,6 @@ function Chips({ l, isNew }: { l: Listing; isNew: boolean }) {
         <span className="chip chip-warn" title={l.checkError}>
           <Icon name="alert" size="s" style={{ width: 12, height: 12 }} />
           Kontrola zlyhala
-        </span>
-      )}
-      {isNew && (
-        <span className="chip chip-target" style={{ paddingLeft: 7 }}>
-          <span className="dot" style={{ width: 6, height: 6 }} />
-          Nové
         </span>
       )}
     </div>
@@ -76,11 +70,12 @@ export function ListingCard({ l, isNew }: { l: Listing; isNew: boolean }) {
     );
   }
   return (
-    <Link className={`card${dim ? " removed" : ""}`} href={`/inzerat/${l.id}`} scroll={false}>
+    <Link className={`card${dim ? " removed" : ""}${isNew ? " is-new" : ""}`} href={`/inzerat/${l.id}`} scroll={false}>
+      {isNew && <span className="new-dot" aria-label="Nová zmena" />}
       <Img src={l.images[0]} alt={l.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       <div className="meta">
         <div style={{ marginBottom: 8 }}>
-          <Chips l={l} isNew={isNew} />
+          <Chips l={l} />
         </div>
         <div className="title">{l.title}</div>
         <div className="row">
@@ -100,9 +95,8 @@ export function ListingCard({ l, isNew }: { l: Listing; isNew: boolean }) {
 /** Riadok zoznamu (mobil). */
 export function ListingRow({ l, isNew }: { l: Listing; isNew: boolean }) {
   const dim = l.status === "removed";
-  const when = l.removedAt ?? l.history.at(-1)?.at ?? l.addedAt;
   return (
-    <Link href={`/inzerat/${l.id}`} scroll={false} className="listing-row" style={{ opacity: dim ? 0.4 : 1 }}>
+    <Link href={`/inzerat/${l.id}`} scroll={false} className={`listing-row${isNew ? " is-new" : ""}`} style={{ opacity: dim ? 0.4 : 1 }}>
       {l.status === "pending" ? (
         <div
           style={{
@@ -126,18 +120,21 @@ export function ListingRow({ l, isNew }: { l: Listing; isNew: boolean }) {
         />
       )}
       <div style={{ minWidth: 0, flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-        <div
-          style={{
-            fontWeight: 600,
-            fontSize: 14,
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            textDecoration: l.status === "removed" ? "line-through" : undefined,
-          }}
-          className={dim ? "muted" : undefined}
-        >
-          {l.title}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+          {isNew && <span className="new-dot" aria-label="Nová zmena" />}
+          <span
+            style={{
+              fontWeight: 600,
+              fontSize: 14,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              textDecoration: l.status === "removed" ? "line-through" : undefined,
+            }}
+            className={dim ? "muted" : undefined}
+          >
+            {l.title}
+          </span>
         </div>
         {l.status === "pending" ? (
           <span className="faint" style={{ fontSize: 13 }}>
@@ -149,12 +146,13 @@ export function ListingRow({ l, isNew }: { l: Listing; isNew: boolean }) {
               <span className="num" style={{ fontWeight: 700, fontSize: 17 }}>
                 {formatPrice(l.price, l.currency)}
               </span>
-              <Chips l={l} isNew={isNew} />
+              <Chips l={l} />
             </div>
-            <div className="faint" style={{ fontSize: 12 }}>
-              {relativeTime(when)}
-              {l.notify.target != null && !targetReached(l) && l.status === "active" && ` · cieľ ${formatPrice(l.notify.target, l.currency)}`}
-            </div>
+            {l.notify.target != null && !targetReached(l) && l.status === "active" && (
+              <div className="faint num" style={{ fontSize: 12 }}>
+                Cieľ {formatPrice(l.notify.target, l.currency)}
+              </div>
+            )}
           </>
         )}
       </div>

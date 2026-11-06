@@ -74,15 +74,15 @@ export function Board() {
       if (ui.sort === "added") return b.addedAt.localeCompare(a.addedAt);
       if (ui.sort === "title") return a.title.localeCompare(b.title, "sk");
       if (ui.sort === "drop") return priceChange(a).totalPct - priceChange(b).totalPct;
-      // odstránené až na koniec
+      // nové zmeny od poslednej návštevy navrch, odstránené až na koniec
+      if (isNew(a) !== isNew(b)) return isNew(a) ? -1 : 1;
       if ((a.status === "removed") !== (b.status === "removed")) return a.status === "removed" ? 1 : -1;
       return lastActivity(b).localeCompare(lastActivity(a));
     });
     return { all: inCat, shown: sorted };
-  }, [listings, categories, category, ui.query, ui.stateFilter, ui.sort]);
+  }, [listings, categories, category, ui.query, ui.stateFilter, ui.sort, isNew]);
 
   const filtered = ui.stateFilter !== "all" || ui.sort !== "changed";
-  const fresh = listings.filter((l) => isNew(l));
   const check = lastCheckTime();
   const total = items.shown.length;
   const searching = ui.query.trim().length > 0;
@@ -118,6 +118,25 @@ export function Board() {
               {l}
             </button>
           ))}
+        </div>
+      </div>
+      <div>
+        <span className="label">Zobrazenie</span>
+        <div style={{ display: "flex", gap: 8 }}>
+          {(
+            [
+              ["grid", "Mriežka", "grid"],
+              ["list", "Zoznam", "rows"],
+            ] as const
+          ).map(([k, label, icon]) => {
+            const on = (ui.view === "auto" ? (mobile ? "list" : "grid") : ui.view) === k;
+            return (
+              <button key={k} className={`pill${on ? " on" : ""}`} aria-pressed={on} onClick={() => ui.setView(k)}>
+                <Icon name={icon} size="s" style={{ width: 15, height: 15 }} />
+                {label}
+              </button>
+            );
+          })}
         </div>
       </div>
       <button className="btn btn-primary btn-block" onClick={() => setFilterOpen(false)}>
@@ -229,20 +248,6 @@ export function Board() {
           )}
         </div>
 
-        {/* zmeny od poslednej návštevy */}
-        <AnimatePresence>
-          {fresh.length > 0 && !searching && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              style={{ overflow: "hidden" }}
-            >
-              <SinceLastVisit items={fresh} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {noListingsAtAll ? (
           <EmptyHero guest={false} />
         ) : total === 0 ? (
@@ -253,8 +258,8 @@ export function Board() {
               resetFilter();
             }}
           />
-        ) : mobile ? (
-          <motion.div layout style={{ marginTop: -8 }}>
+        ) : (ui.view === "auto" ? mobile : ui.view === "list") ? (
+          <motion.div layout className="list-view" style={{ marginTop: -8 }}>
             <AnimatePresence initial={false}>
               {items.shown.map((l) => (
                 <motion.div
@@ -292,35 +297,6 @@ export function Board() {
       <Link className="btn btn-primary fab only-mobile" href="/pridat" aria-label="Pridať inzerát" scroll={false}>
         <Icon name="plus" size="l" style={{ strokeWidth: 2.2 }} />
       </Link>
-    </div>
-  );
-}
-
-function SinceLastVisit({ items }: { items: Listing[] }) {
-  const { markSeen } = useStore();
-  const ui = useUI();
-  const down = items.filter((l) => priceChange(l).kind === "down").length;
-  const up = items.filter((l) => priceChange(l).kind === "up").length;
-  const removed = items.filter((l) => l.status === "removed").length;
-  const parts = [
-    down && `${down} ${plural(down, "zlacnenie", "zlacnenia", "zlacnení")}`,
-    up && `${up} ${plural(up, "zdraženie", "zdraženia", "zdražení")}`,
-    removed && `${removed} ${plural(removed, "odstránený", "odstránené", "odstránených")}`,
-  ].filter(Boolean);
-  return (
-    <div className="since-banner" role="status">
-      <span className="dot" />
-      <span style={{ flex: 1, minWidth: 180 }}>
-        <strong style={{ fontWeight: 600 }}>Od tvojej poslednej návštevy:</strong> <span className="muted">{parts.join(", ")}</span>
-      </span>
-      {down > 0 && (
-        <button className="btn btn-ghost btn-sm" style={{ color: "var(--link)" }} onClick={() => ui.setStateFilter("down")}>
-          Ukázať zlacnené
-        </button>
-      )}
-      <button className="btn btn-ghost btn-sm" onClick={() => items.forEach((l) => markSeen(l.id))}>
-        Videl som
-      </button>
     </div>
   );
 }

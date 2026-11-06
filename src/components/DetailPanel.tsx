@@ -52,7 +52,7 @@ export function DetailPanel({ id }: { id: string }) {
         transition={{ type: "spring", damping: 34, stiffness: 300, mass: 0.9 }}
         onAnimationComplete={() => closing && router.push("/prehlad", { scroll: false })}
       >
-        {l ? <Detail l={l} onClose={close} /> : <NotFound onClose={close} />}
+        <div className="detail-scroll">{l ? <Detail l={l} onClose={close} /> : <NotFound onClose={close} />}</div>
       </motion.aside>
     </div>
   );

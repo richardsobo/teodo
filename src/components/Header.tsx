@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Icon } from "./Icon";
 import { Logo } from "./Logo";
 import { NotificationsList } from "./NotificationsList";
@@ -15,26 +15,38 @@ import { CHECK_HOURS } from "@/lib/schedule";
 function useHeaderScroll() {
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const last = useRef(0);
   useEffect(() => {
+    let last = Math.max(0, window.scrollY);
+    let down = 0;
+    let up = 0;
     let raf = 0;
+    const update = () => {
+      // iOS „gumový“ scroll vie dať záporné hodnoty – orežeme ich
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const y = Math.min(Math.max(0, window.scrollY), Math.max(0, max));
+      const dy = y - last;
+      last = y;
+      setScrolled(y > 8);
+      if (y < 64) {
+        setHidden(false);
+        down = up = 0;
+        return;
+      }
+      if (dy > 0) {
+        down += dy;
+        up = 0;
+        if (down > 24) setHidden(true);
+      } else if (dy < 0) {
+        up -= dy;
+        down = 0;
+        if (up > 12) setHidden(false);
+      }
+    };
     const on = () => {
       cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const y = window.scrollY;
-        const dy = y - last.current;
-        if (y < 12) {
-          setHidden(false);
-          setScrolled(false);
-        } else if (dy > 6 && y > 90) {
-          setHidden(true);
-        } else if (dy < -6) {
-          setHidden(false);
-          setScrolled(true);
-        }
-        last.current = y;
-      });
+      raf = requestAnimationFrame(update);
     };
+    update();
     window.addEventListener("scroll", on, { passive: true });
     return () => {
       window.removeEventListener("scroll", on);
@@ -101,29 +113,27 @@ export function Header() {
 
         <div className="only-mobile" style={{ flex: 1 }} />
 
-        {/* mobil: lupa */}
-        {!guest && onBoard && (
-          <button
-            className="btn btn-ghost btn-icon only-mobile"
-            aria-label="Hľadať"
-            aria-expanded={ui.searchOpen}
-            onClick={() => ui.setSearchOpen(!ui.searchOpen)}
-          >
-            <Icon name="search" />
-          </button>
-        )}
-
         {guest ? (
-          <>
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <Link className="btn btn-ghost btn-icon" href="/prihlasenie" aria-label="Upozornenia">
               <Icon name="bell" />
             </Link>
             <Link className="btn btn-ghost btn-icon" href="/prihlasenie" aria-label="Prihlásiť sa">
               <Icon name="user" />
             </Link>
-          </>
+          </div>
         ) : user ? (
           <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 4 }}>
+            {onBoard && (
+              <button
+                className="btn btn-ghost btn-icon only-mobile"
+                aria-label="Hľadať"
+                aria-expanded={ui.searchOpen}
+                onClick={() => ui.setSearchOpen(!ui.searchOpen)}
+              >
+                <Icon name="search" />
+              </button>
+            )}
             {mobile ? (
               <Link
                 className="btn btn-ghost btn-icon"

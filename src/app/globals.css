@@ -1486,3 +1486,159 @@ input[type="search"]::-webkit-search-cancel-button {
     height: 44px;
   }
 }
+
+/* =====================================================================
+   Úpravy pre iPhone / Safari
+   ===================================================================== */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+html,
+body {
+  overflow-x: clip;
+}
+
+/* iOS Safari priblíži stránku pri kliknutí do poľa s písmom menším ako 16 px – na dotykových zariadeniach preto 16 px */
+@media (hover: none) and (pointer: coarse), (max-width: 719px) {
+  .field input,
+  .field select,
+  .field textarea {
+    font-size: 16px;
+  }
+}
+
+/* hlavička: odstup od výrezu displeja, sklo len v rámci hlavičky + jemný prechod do stratena */
+.site-header {
+  padding-top: var(--safe-top);
+}
+.t-main {
+  padding-top: calc(var(--header-h) + var(--safe-top));
+}
+.hdr-blur {
+  inset: 0;
+  background: rgba(16, 18, 23, 0.62);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+.hdr-blur::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 28px;
+  background: linear-gradient(to bottom, rgba(16, 18, 23, 0.62), rgba(16, 18, 23, 0));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+  mask-image: linear-gradient(to bottom, #000, transparent);
+}
+.login-card {
+  top: calc(max(9vh, 88px) + var(--safe-top));
+}
+@media (max-width: 479px) {
+  .login-card {
+    top: calc(76px + var(--safe-top));
+  }
+}
+
+/* plávajúce prvky nad spodnou lištou Safari */
+.fab {
+  bottom: calc(24px + var(--safe-bottom));
+}
+
+/* detail na mobile: ikony vždy viditeľné, pod výrezom displeja */
+@media (max-width: 719px) {
+  .detail-top {
+    position: sticky;
+    top: 0;
+    padding: calc(var(--safe-top) + 10px) 14px 10px;
+    margin-bottom: calc(-1 * (var(--safe-top) + 60px));
+    pointer-events: none;
+  }
+  .detail-top > * {
+    pointer-events: auto;
+  }
+  .gallery-main {
+    aspect-ratio: auto;
+    height: calc(290px + var(--safe-top));
+  }
+  .detail-body {
+    padding-bottom: calc(120px + var(--safe-bottom));
+  }
+}
+
+/* nové zmeny od poslednej návštevy: jemná modrá */
+.listing-row.is-new {
+  background: linear-gradient(90deg, rgba(42, 99, 219, 0.1), rgba(42, 99, 219, 0) 85%);
+  margin: 0 calc(var(--gutter) * -1);
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+.new-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--link);
+  box-shadow: 0 0 0 3px rgba(77, 127, 238, 0.25);
+  flex: none;
+}
+.card.is-new {
+  box-shadow: 0 0 0 2px rgba(77, 127, 238, 0.55);
+}
+.card .new-dot {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+}
+
+/* mriežka na mobile: dva stĺpce */
+@media (max-width: 719px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .grid .card {
+    border-radius: 14px;
+  }
+  .grid .card .meta {
+    padding: 40px 12px 12px;
+  }
+  .grid .card .title {
+    font-size: 13.5px;
+  }
+  .grid .card .price {
+    font-size: 16px;
+  }
+}
+
+/* detail: posúva sa vnútorný obal, aby plávajúce tlačidlo ostalo dole */
+.detail-panel {
+  overflow: hidden;
+}
+.detail-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 719px) {
+  .detail-top {
+    background: linear-gradient(to bottom, rgba(16, 18, 23, 0.85), rgba(16, 18, 23, 0));
+  }
+}
+@media (min-width: 720px) {
+  .listing-row.is-new {
+    margin: 0 -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+    border-radius: 12px;
+  }
+}
