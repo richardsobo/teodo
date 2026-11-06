@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Icon } from "./Icon";
 import { ListingCard, TargetReachedChip } from "./ListingCard";
 import { EditListingDialog, NotifySettings } from "./ListingDialogs";
-import { PriceChart, PriceSummary } from "./PriceChart";
+import { PriceChart } from "./PriceChart";
 import { Dialog, Img, Popover, useEscape, useIsMobile, useScrollLock } from "./ui";
 import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-state";
@@ -300,7 +300,6 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
                     </span>
                   )}
                 </div>
-                <PriceSummary history={l.history} currency={l.currency} removed={removed} />
                 <PriceChart history={l.history} currency={l.currency} target={removed ? null : l.notify.target} until={l.removedAt} compact={mobile} />
                 <History l={l} />
                 <span className="faint" style={{ fontSize: 12.5, marginTop: -4 }}>
@@ -427,30 +426,49 @@ function Gallery({ images, title, dim }: { images: string[]; title: string; dim:
 function Description({ text }: { text: string }) {
   const ref = useRef<HTMLParagraphElement>(null);
   const [open, setOpen] = useState(false);
-  const [full, setFull] = useState<number | null>(null);
-  const COLLAPSED = 45; // dva riadky (14 px × 1,6)
+  // „clamped“ = zbalené na 2 riadky s trojbodkou; pri zbaľovaní sa zapne až po skončení animácie
+  const [clamped, setClamped] = useState(true);
+  const [heights, setHeights] = useState<{ two: number; full: number } | null>(null);
 
-  // zmeriame skutočnú výšku textu (aj po zmene šírky okna)
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const measure = () => setFull(el.scrollHeight);
+    const measure = () => {
+      const lh = parseFloat(getComputedStyle(el).lineHeight) || 24;
+      const prev = el.style.webkitLineClamp;
+      el.style.webkitLineClamp = "unset";
+      const full = el.scrollHeight;
+      el.style.webkitLineClamp = prev;
+      setHeights({ two: Math.ceil(lh * 2), full });
+    };
     measure();
     const ro = new ResizeObserver(measure);
-    ro.observe(el);
+    ro.observe(el.parentElement!);
     return () => ro.disconnect();
   }, [text]);
 
-  const long = full == null ? text.length > 160 : full > COLLAPSED + 4;
+  const long = heights ? heights.full > heights.two + 2 : text.length > 160;
+  const toggle = () => {
+    if (open) setOpen(false);
+    else {
+      setClamped(false);
+      setOpen(true);
+    }
+  };
+
   return (
-    <div style={{ fontSize: 14, lineHeight: 1.6 }}>
-      <div className="desc-wrap" style={{ height: !long ? "auto" : open ? (full ?? "auto") : COLLAPSED }} data-open={open || !long ? "true" : "false"}>
-        <p ref={ref} className="muted" style={{ margin: 0 }}>
+    <div>
+      <div
+        className="desc-wrap"
+        style={{ height: !long || !heights ? "auto" : open ? heights.full : heights.two }}
+        onTransitionEnd={() => !open && setClamped(true)}
+      >
+        <p ref={ref} className={`muted${long && clamped ? " clamp-2" : ""}`} style={{ margin: 0 }}>
           {text}
         </p>
       </div>
       {long && (
-        <button className="link desc-toggle" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+        <button className="link desc-toggle" onClick={toggle} aria-expanded={open}>
           {open ? "Skryť popis" : "Zobraziť celý popis"}
           <Icon name="chevronDown" size="s" style={{ width: 14, height: 14 }} />
         </button>

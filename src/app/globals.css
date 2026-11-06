@@ -1992,3 +1992,23 @@ body {
 .chart-tip {
   gap: 10px;
 }
+
+/* ---------- Kolo 6 ---------- */
+.desc-wrap[data-open] {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+.desc-wrap {
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.desc-section + .note-block,
+.desc-section + .note-add {
+  margin-top: 24px;
+}
