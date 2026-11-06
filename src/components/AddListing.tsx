@@ -35,9 +35,7 @@ export function AddListing() {
   const [url, setUrl] = useState(initialUrl);
   const [urlError, setUrlError] = useState<string | null>(null);
   const [dupId, setDupId] = useState<string | null>(null);
-  const [categoryId, setCategoryId] = useState<string>(() =>
-    ui.category !== "all" && ui.category !== "archive" && ui.category !== "none" ? ui.category : (store.categories[0]?.id ?? ""),
-  );
+  const [categoryId, setCategoryId] = useState<string>(() => (ui.category !== "all" && ui.category !== "none" ? ui.category : (store.categories[0]?.id ?? "")));
   const [result, setResult] = useState<ExtractResult | null>(null);
   const [fetchError, setFetchError] = useState("");
   const [form, setForm] = useState({ title: "", price: "", currency: "EUR", location: "", targetOn: false, target: "" });

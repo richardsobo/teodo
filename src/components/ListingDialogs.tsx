@@ -94,7 +94,7 @@ export function NotifySettings({ l, onDone }: { l: Listing; onDone?: () => void 
 
 /* ---------------- Úprava inzerátu ---------------- */
 export function EditListingDialog({ l, open, onClose }: { l: Listing; open: boolean; onClose: () => void }) {
-  const { categories, updateListing, archiveListing, restoreListing, removeListing } = useStore();
+  const { categories, updateListing, restoreListing, removeListing } = useStore();
   const toast = useToast();
   const router = useRouter();
   const [title, setTitle] = useState(l.title);
@@ -102,7 +102,7 @@ export function EditListingDialog({ l, open, onClose }: { l: Listing; open: bool
   const [categoryId, setCategoryId] = useState(l.categoryId ?? "");
   const [price, setPrice] = useState(l.price != null ? String(l.price) : "");
   const [errors, setErrors] = useState<{ title?: string; url?: string; price?: string }>({});
-  const [confirm, setConfirm] = useState<"" | "archive" | "delete">("");
+  const [confirm, setConfirm] = useState<"" | "delete">("");
   const manual = l.source.support === "manual";
 
   const save = () => {
@@ -195,72 +195,16 @@ export function EditListingDialog({ l, open, onClose }: { l: Listing; open: bool
             Uložiť zmeny
           </button>
           <hr className="divider" />
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {l.status === "archived" ? (
-              <button
-                className="btn btn-ghost btn-block"
-                onClick={() => {
-                  restoreListing(l.id);
-                  onClose();
-                  toast.show({ text: "Inzerát je späť medzi sledovanými." });
-                }}
-              >
-                <Icon name="refresh" size="s" />
-                Obnoviť z archívu
-              </button>
-            ) : (
-              <button className="btn btn-ghost btn-block" onClick={() => setConfirm("archive")}>
-                <Icon name="archive" size="s" />
-                Presunúť do archívu
-              </button>
-            )}
-            <button className="btn btn-ghost btn-block btn-danger" onClick={() => setConfirm("delete")}>
-              <Icon name="trash" size="s" />
-              Prestať sledovať inzerát
-            </button>
-          </div>
-        </div>
-      </Dialog>
-
-      <Dialog open={open && confirm === "archive"} onClose={() => setConfirm("")} title="Prečo ho archivuješ?" z={72}>
-        <p className="muted" style={{ margin: "0 0 18px", fontSize: 14, lineHeight: 1.6 }}>
-          V archíve ostane s fotkami aj históriou ceny, no cenu už nebudeme kontrolovať.
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {(
-            [
-              ["bought", "Kúpil som", "bag"],
-              ["not-interested", "Nemám záujem", "close"],
-            ] as const
-          ).map(([reason, label, icon]) => (
-            <button
-              key={reason}
-              className="btn btn-soft btn-lg btn-block"
-              style={{ justifyContent: "flex-start" }}
-              onClick={() => {
-                archiveListing(l.id, reason);
-                setConfirm("");
-                onClose();
-                toast.show({
-                  text: reason === "bought" ? "Gratulujeme ku kúpe! Inzerát je v archíve." : "Inzerát je v archíve.",
-                  action: { label: "Späť", onClick: () => restoreListing(l.id) },
-                });
-              }}
-            >
-              <Icon name={icon} size="s" />
-              {label}
-            </button>
-          ))}
-          <button className="btn btn-ghost btn-block" onClick={() => setConfirm("")}>
-            Zrušiť
+          <button className="btn btn-ghost btn-block btn-danger" onClick={() => setConfirm("delete")}>
+            <Icon name="trash" size="s" />
+            Prestať sledovať a odstrániť
           </button>
         </div>
       </Dialog>
 
-      <Dialog open={open && confirm === "delete"} onClose={() => setConfirm("")} title="Prestať sledovať?" z={72}>
+      <Dialog open={open && confirm === "delete"} onClose={() => setConfirm("")} title="Odstrániť inzerát?" z={72}>
         <p className="muted" style={{ margin: "0 0 20px", fontSize: 14, lineHeight: 1.6 }}>
-          Inzerát „{l.title}“ zmažeme z tvojho zoznamu aj s históriou ceny a poznámkou. Toto sa nedá vrátiť. Ak ho chceš len odložiť, presuň ho radšej do
-          archívu.
+          Inzerát „{l.title}“ prestaneme sledovať a natrvalo ho odstránime z tvojho zoznamu aj s históriou ceny a poznámkou.
         </p>
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
           <button className="btn btn-ghost" onClick={() => setConfirm("")}>
@@ -273,11 +217,12 @@ export function EditListingDialog({ l, open, onClose }: { l: Listing; open: bool
               onClose();
               router.push("/prehlad", { scroll: false });
               setTimeout(() => removeListing(l.id), 250);
-              toast.show({ text: "Inzerát už nesledujeme." });
+              const snapshot = l;
+              toast.show({ text: "Inzerát je odstránený.", action: { label: "Späť", onClick: () => restoreListing(snapshot) } });
             }}
           >
             <Icon name="trash" size="s" />
-            Prestať sledovať
+            Odstrániť
           </button>
         </div>
       </Dialog>

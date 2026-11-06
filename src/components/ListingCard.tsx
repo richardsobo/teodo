@@ -11,9 +11,7 @@ function Chips({ l, isNew }: { l: Listing; isNew: boolean }) {
   const reached = targetReached(l);
   return (
     <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-      {l.status === "archived" ? (
-        <span className="chip chip-soft">{l.archiveReason === "bought" ? "Kúpil som" : "Nemám záujem"}</span>
-      ) : c.kind === "none" ? null : c.kind === "unknown" ? (
+      {c.kind === "none" ? null : c.kind === "unknown" ? (
         <span className="chip chip-soft">Bez ceny</span>
       ) : c.kind === "pending" ? null : (
         <span className={`chip ${chipClass(c.kind)}`}>{changeLabel(l, c)}</span>
@@ -48,7 +46,7 @@ function TargetLine({ l }: { l: Listing }) {
 /** Karta do mriežky (desktop, tablet). */
 export function ListingCard({ l, isNew }: { l: Listing; isNew: boolean }) {
   const c = priceChange(l);
-  const dim = l.status === "removed" || l.status === "archived";
+  const dim = l.status === "removed";
   if (l.status === "pending") {
     return (
       <Link className="card" href={`/inzerat/${l.id}`} style={{ border: "1px dashed rgba(255,255,255,.12)", background: "transparent" }} scroll={false}>
@@ -101,7 +99,7 @@ export function ListingCard({ l, isNew }: { l: Listing; isNew: boolean }) {
 
 /** Riadok zoznamu (mobil). */
 export function ListingRow({ l, isNew }: { l: Listing; isNew: boolean }) {
-  const dim = l.status === "removed" || l.status === "archived";
+  const dim = l.status === "removed";
   const when = l.removedAt ?? l.history.at(-1)?.at ?? l.addedAt;
   return (
     <Link href={`/inzerat/${l.id}`} scroll={false} className="listing-row" style={{ opacity: dim ? 0.4 : 1 }}>

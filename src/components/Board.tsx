@@ -51,22 +51,13 @@ export function Board() {
   const [filterOpen, setFilterOpen] = useState(false);
   const { listings, categories, isNew } = store;
 
-  const catName =
-    ui.category === "all"
-      ? "Všetky inzeráty"
-      : ui.category === "archive"
-        ? "Archív"
-        : ui.category === "none"
-          ? "Bez kategórie"
-          : categories.find((c) => c.id === ui.category)?.name;
+  const catName = ui.category === "all" ? "Všetky inzeráty" : ui.category === "none" ? "Bez kategórie" : categories.find((c) => c.id === ui.category)?.name;
   // kategória mohla medzitým zaniknúť
   const category = catName ? ui.category : "all";
 
   const items = useMemo(() => {
     const q = ui.query.trim();
     const inCat = listings.filter((l) => {
-      if (category === "archive") return l.status === "archived";
-      if (l.status === "archived") return false;
       if (category === "all") return true;
       if (category === "none") return !l.categoryId || !categories.some((c) => c.id === l.categoryId);
       return l.categoryId === category;
@@ -192,8 +183,7 @@ export function Board() {
             </AnimatePresence>
             <p className="faint" style={{ margin: "4px 0 0", fontSize: mobile ? 12 : 14 }}>
               {total} {plural(total, "inzerát", "inzeráty", "inzerátov")}
-              {category !== "archive" &&
-                ` · ceny sme naposledy skontrolovali ${relativeTime(check.toISOString()).startsWith("dnes") ? `dnes o ${formatTime(check.toISOString())}` : relativeTime(check.toISOString())}`}
+              {` · ceny sme naposledy skontrolovali ${relativeTime(check.toISOString()).startsWith("dnes") ? `dnes o ${formatTime(check.toISOString())}` : relativeTime(check.toISOString())}`}
             </p>
           </div>
           {!noListingsAtAll && (
@@ -241,7 +231,7 @@ export function Board() {
 
         {/* zmeny od poslednej návštevy */}
         <AnimatePresence>
-          {fresh.length > 0 && category !== "archive" && !searching && (
+          {fresh.length > 0 && !searching && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
@@ -257,7 +247,7 @@ export function Board() {
           <EmptyHero guest={false} />
         ) : total === 0 ? (
           <EmptyResult
-            kind={searching ? "search" : filtered ? "filter" : category === "archive" ? "archive" : "category"}
+            kind={searching ? "search" : filtered ? "filter" : "category"}
             onReset={() => {
               ui.setQuery("");
               resetFilter();
@@ -335,11 +325,10 @@ function SinceLastVisit({ items }: { items: Listing[] }) {
   );
 }
 
-function EmptyResult({ kind, onReset }: { kind: "search" | "filter" | "archive" | "category"; onReset: () => void }) {
+function EmptyResult({ kind, onReset }: { kind: "search" | "filter" | "category"; onReset: () => void }) {
   const text = {
     search: ["Nič sme nenašli", "Skús iné slovo – hľadáme v názve, popise, lokalite aj poznámkach."],
     filter: ["Žiadny inzerát nevyhovuje filtru", "Skús zmeniť filter alebo kategóriu."],
-    archive: ["Archív je prázdny", "Keď niečo kúpiš alebo ťa inzerát prestane zaujímať, presuň ho sem. Ceny v archíve už nekontrolujeme."],
     category: ["V tejto kategórii zatiaľ nič nie je", "Pridaj inzerát a pri pridávaní vyber túto kategóriu."],
   }[kind];
   return (
@@ -365,11 +354,11 @@ function EmptyResult({ kind, onReset }: { kind: "search" | "filter" | "archive" 
           <Icon name="plus" />
           Pridať inzerát
         </Link>
-      ) : kind !== "archive" ? (
+      ) : (
         <button className="btn btn-soft" style={{ marginTop: 8 }} onClick={onReset}>
           Zrušiť hľadanie a filter
         </button>
-      ) : null}
+      )}
     </div>
   );
 }

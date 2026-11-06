@@ -192,29 +192,6 @@ export function buildDemoListings(now = new Date()): Listing[] {
       notify: { onChange: true, target: null },
       note: "",
     },
-    {
-      id: "apple-watch-se",
-      url: "https://mobil.bazos.sk/inzerat/170111882/apple-watch-se-44mm.php",
-      source: { domain: "mobil.bazos.sk", name: "Bazoš", support: "adapter" },
-      title: "Apple Watch SE 44 mm, 2. generácia",
-      description: "Hodinky Apple Watch SE 2. gen, 44 mm, GPS, batéria 96 %. Ako nové.",
-      images: imgs("watch", 3),
-      price: 150,
-      currency: "EUR",
-      location: "Prešov",
-      categoryId: "c-elektronika",
-      status: "archived",
-      archiveReason: "bought",
-      addedAt: at(45, 18, 5, now),
-      lastCheckedAt: at(25, 6, 12, now),
-      history: h([
-        [45, 18, 180],
-        [33, 6, 165],
-        [27, 18, 150],
-      ]),
-      notify: { onChange: true, target: 150 },
-      note: "Kúpené, odovzdanie na stanici.",
-    },
   ];
 }
 

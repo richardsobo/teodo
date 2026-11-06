@@ -4,11 +4,11 @@ Web na sledovanie cien inzerátov. Používateľ vloží odkaz z bazára (alebo 
 
 ## Stav: krok 1 – frontend s ukážkovými dátami
 
-| Krok | Obsah | Stav |
-| --- | --- | --- |
-| 1 | Frontend (Next.js) s ukážkovými dátami v prehliadači | ✅ hotovo |
-| 2 | Supabase: prihlásenie (e-mail + heslo, Google), databáza, fotky | ⏳ |
-| 3 | Sťahovanie a kontrola cien, e-maily (Resend), plánovač | ⏳ |
+| Krok | Obsah                                                           | Stav      |
+| ---- | --------------------------------------------------------------- | --------- |
+| 1    | Frontend (Next.js) s ukážkovými dátami v prehliadači            | ✅ hotovo |
+| 2    | Supabase: prihlásenie (e-mail + heslo, Google), databáza, fotky | ⏳        |
+| 3    | Sťahovanie a kontrola cien, e-maily (Resend), plánovač          | ⏳        |
 
 ### Spustenie
 
@@ -29,16 +29,16 @@ Pri pridávaní inzerátu sa dajú vyskúšať všetky stavy:
 
 ## Obrazovky
 
-| URL | Čo tam je |
-| --- | --- |
-| `/` | Úvod pre neprihláseného (vloženie odkazu, cookie lišta) |
-| `/prihlasenie` | Prihlásenie v krokoch: e-mail → heslo / nové heslo / Google, zabudnuté heslo, validácia |
-| `/prehlad` | Prehľad inzerátov: kategórie, vyhľadávanie, filter a zoradenie, archív, „od poslednej návštevy“ |
-| `/inzerat/[id]` | Detail – panel vysúvajúci sa sprava s vlastnou URL (galéria, graf ceny, história, poznámka, upozornenia, úprava, archív) |
-| `/pridat` | Pridanie inzerátu v dvoch krokoch; podporuje `?url=` a `?text=` (Zdieľať → Teodo) |
-| `/upozornenia` | Zoznam upozornení (na mobile; na desktope rozbaľovacie okno pod zvončekom) |
-| `/nastavenia` | Účet, zmena hesla (len pri e-mailovom účte), e-mailové upozornenia, kategórie, zmazanie účtu |
-| `/ako-to-funguje`, `/ochrana-udajov`, `/podmienky`, `/kontakt` | Informačné stránky |
+| URL                                                            | Čo tam je                                                                                                                                   |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                                                            | Úvod pre neprihláseného (vloženie odkazu, cookie lišta)                                                                                     |
+| `/prihlasenie`                                                 | Prihlásenie v krokoch: e-mail → heslo / nové heslo / Google, zabudnuté heslo, validácia                                                     |
+| `/prehlad`                                                     | Prehľad inzerátov: kategórie, vyhľadávanie, filter a zoradenie, „od poslednej návštevy“                                                     |
+| `/inzerat/[id]`                                                | Detail – panel vysúvajúci sa sprava s vlastnou URL (hlavná fotka s počtom, graf ceny, história, poznámka, upozornenia, úprava, odstránenie) |
+| `/pridat`                                                      | Pridanie inzerátu v dvoch krokoch; podporuje `?url=` a `?text=` (Zdieľať → Teodo)                                                           |
+| `/upozornenia`                                                 | Zoznam upozornení (na mobile; na desktope rozbaľovacie okno pod zvončekom)                                                                  |
+| `/nastavenia`                                                  | Účet, zmena hesla (len pri e-mailovom účte), e-mailové upozornenia, kategórie, zmazanie účtu                                                |
+| `/ako-to-funguje`, `/ochrana-udajov`, `/podmienky`, `/kontakt` | Informačné stránky                                                                                                                          |
 
 Všetko je responzívne (mobil / tablet / desktop). Na mobile: plávajúce „+“, panely zdola, vyhľadávanie pod lupou, v detaile plávajúce „Zobraziť inzerát“.
 
@@ -47,6 +47,7 @@ Všetko je responzívne (mobil / tablet / desktop). Na mobile: plávajúce „+�
 - **Kontrola cien 2× denne: o 6:00 a 18:00** (Europe/Bratislava), na serveri rozložená do okna ±30 min, aby sme na jeden web neposlali všetky požiadavky naraz. Ranná kontrola zachytí zmeny z večera, upozornenie príde pred prácou; večerná zachytí zmeny cez deň. Konštanty sú v `src/lib/schedule.ts`.
 - **Upozornenia**: predvolene e-mail hneď po kontrole, pri ktorej sa niečo zmenilo. V nastaveniach sa dá prepnúť na denný súhrn alebo e-maily vypnúť. Cieľová cena je voliteľná pri každom inzeráte.
 - **Filter** nemá rozsah cien – inzeráty môžu byť v rôznych menách a neprepočítavame ich. Filtruje sa podľa stavu ceny (zlacnené, zdražené, bez zmeny, odstránené) a zoraďuje.
+- **Archív nie je.** „Prestať sledovať“ inzerát natrvalo odstráni (s možnosťou „Späť“ v hlásení), aby zoznam ostal prehľadný. Zmazaním kategórie sa po potvrdení natrvalo zmažú aj inzeráty v nej.
 - **Detekciu znovu pridaných inzerátov nerobíme.** Ak predajca inzerát pridá znova, používateľ vloží nový odkaz v úprave a história ceny ostane.
 - **Heslo**: pri prihlásení e-mailom je druhý krok heslo (existujúci účet) alebo vytvorenie hesla (nový účet). Pri účte cez Google sa heslo nemení.
 

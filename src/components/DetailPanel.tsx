@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Icon } from "./Icon";
 import { ListingCard, ListingRow } from "./ListingCard";
 import { EditListingDialog, NotifySettings } from "./ListingDialogs";
 import { PriceChart } from "./PriceChart";
 import { Dialog, Img, Popover, useEscape, useIsMobile, useScrollLock } from "./ui";
-import { useStore, useToast } from "@/lib/store";
+import { useStore } from "@/lib/store";
 import { useUI } from "@/lib/ui-state";
 import { formatDate, formatPrice, formatTime, priceChange, relativeTime, targetReached } from "@/lib/format";
 import { nextCheckTime } from "@/lib/schedule";
@@ -77,20 +77,18 @@ function NotFound({ onClose }: { onClose: () => void }) {
 function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
   const store = useStore();
   const ui = useUI();
-  const toast = useToast();
   const mobile = useIsMobile();
   const [panel, setPanel] = useState<"" | "bell" | "edit">("");
   const c = priceChange(l);
   const category = store.categories.find((x) => x.id === l.categoryId);
   const reached = targetReached(l);
   const removed = l.status === "removed";
-  const archived = l.status === "archived";
-  const others = store.listings.filter((x) => x.id !== l.id && x.categoryId === l.categoryId && x.status !== "archived" && l.categoryId).slice(0, 4);
+  const others = store.listings.filter((x) => x.id !== l.id && x.categoryId === l.categoryId && l.categoryId).slice(0, 4);
   const notifyOn = l.notify.onChange || l.notify.target != null;
 
   const notices = (
     <>
-      {(removed || archived || l.checkError || l.source.support === "manual" || l.status === "pending") && (
+      {(removed || l.checkError || l.source.support === "manual" || l.status === "pending") && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {removed && (
             <div className="notice notice-gray">
@@ -101,25 +99,7 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
               </span>
             </div>
           )}
-          {archived && (
-            <div className="notice notice-gray" style={{ alignItems: "center" }}>
-              <Icon name="archive" size="s" />
-              <span className="muted" style={{ flex: 1 }}>
-                V archíve · {l.archiveReason === "bought" ? "Kúpil som" : "Nemám záujem"}. Cenu už nekontrolujeme.
-              </span>
-              <button
-                className="btn btn-ghost btn-sm"
-                style={{ color: "var(--link)" }}
-                onClick={() => {
-                  store.restoreListing(l.id);
-                  toast.show({ text: "Inzerát je späť medzi sledovanými." });
-                }}
-              >
-                Obnoviť
-              </button>
-            </div>
-          )}
-          {l.checkError && !removed && !archived && (
+          {l.checkError && !removed && (
             <div className="notice notice-warn">
               <Icon name="alert" size="s" style={{ color: "var(--peach-text)", marginTop: 2 }} />
               <span className="muted" style={{ flex: 1 }}>
@@ -128,7 +108,7 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
               </span>
             </div>
           )}
-          {l.source.support === "manual" && !archived && (
+          {l.source.support === "manual" && (
             <div className="notice notice-blue">
               <Icon name="edit" size="s" style={{ color: "var(--link)", marginTop: 2 }} />
               <span className="muted" style={{ flex: 1 }}>
@@ -160,7 +140,7 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
         </button>
       )}
       <div style={{ display: "flex", alignItems: "center", gap: mobile ? 8 : 4, position: "relative" }}>
-        {!archived && (
+        <>
           <button
             className={`btn btn-icon ${mobile ? "photo-btn" : "btn-ghost"}`}
             data-popover-trigger
@@ -195,7 +175,7 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
               )}
             </span>
           </button>
-        )}
+        </>
         <button
           className={`btn btn-icon ${mobile ? "photo-btn" : "btn-ghost"}`}
           aria-label="Upraviť inzerát"
@@ -227,7 +207,7 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
         {!mobile && notices}
 
         <div className="detail-cols">
-          <Gallery images={l.images} title={l.title} dim={removed || archived} />
+          <Gallery images={l.images} title={l.title} dim={removed} />
 
           <div className="detail-info">
             {mobile && notices}
@@ -283,7 +263,7 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
                     : l.source.support === "manual"
                       ? "Cenu dopĺňaš ručne"
                       : "Ešte nekontrolované"}
-                  {!removed && !archived && l.source.support !== "manual" && ` · ďalšia kontrola o ${formatTime(nextCheckTime().toISOString())}`}
+                  {!removed && l.source.support !== "manual" && ` · ďalšia kontrola o ${formatTime(nextCheckTime().toISOString())}`}
                 </span>
               </div>
             )}
@@ -420,41 +400,37 @@ function Gallery({ images, title, dim }: { images: string[]; title: string; dim:
           </span>
         )}
       </div>
-      {n > 1 && (
-        <div className="gallery-thumbs" role="group" aria-label="Náhľady fotiek">
-          {images.map((src, k) => (
-            <button
-              key={src}
-              aria-label={`Fotka ${k + 1}`}
-              aria-current={k === i}
-              onClick={() => {
-                setDir(k > i ? 1 : -1);
-                setI(k);
-              }}
-            >
-              <Img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
 
 function Description({ text }: { text: string }) {
+  const ref = useRef<HTMLParagraphElement>(null);
   const [open, setOpen] = useState(false);
-  const long = text.length > 160;
+  const [full, setFull] = useState<number | null>(null);
+  const COLLAPSED = 45; // dva riadky (14 px × 1,6)
+
+  // zmeriame skutočnú výšku textu (aj po zmene šírky okna)
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => setFull(el.scrollHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [text]);
+
+  const long = full == null ? text.length > 160 : full > COLLAPSED + 4;
   return (
     <div style={{ fontSize: 14, lineHeight: 1.6 }}>
-      <motion.p
-        layout
-        className="muted"
-        style={{ margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: open || !long ? "unset" : 2, WebkitBoxOrient: "vertical" }}
-      >
-        {text}
-      </motion.p>
+      <div className="desc-wrap" style={{ height: !long ? "auto" : open ? (full ?? "auto") : COLLAPSED }} data-open={open || !long ? "true" : "false"}>
+        <p ref={ref} className="muted" style={{ margin: 0 }}>
+          {text}
+        </p>
+      </div>
       {long && (
-        <button className="link" style={{ fontSize: 13, marginTop: 4 }} onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+        <button className="link" style={{ fontSize: 13, marginTop: 6 }} onClick={() => setOpen((o) => !o)} aria-expanded={open}>
           {open ? "Skryť popis" : "Celý popis"}
         </button>
       )}
@@ -523,12 +499,16 @@ function Note({ l }: { l: Listing }) {
   }
   if (!editing) {
     return (
-      <div style={{ padding: "12px 14px", borderRadius: 14, background: "rgba(77,127,238,.08)", display: "flex", gap: 12, alignItems: "flex-start" }}>
-        <Icon name="note" size="s" style={{ color: "var(--link)", marginTop: 3 }} />
-        <p style={{ margin: 0, flex: 1, fontSize: 14, whiteSpace: "pre-wrap" }}>{l.note}</p>
-        <button className="btn btn-ghost btn-sm" onClick={() => setEditing(true)}>
-          Upraviť
-        </button>
+      <div className="note-box">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, minHeight: 28 }}>
+          <span className="cap" style={{ color: "var(--link)" }}>
+            Poznámka
+          </span>
+          <button className="btn btn-ghost btn-sm" onClick={() => setEditing(true)} style={{ height: 28, marginRight: -8 }}>
+            Upraviť
+          </button>
+        </div>
+        <p style={{ margin: "2px 0 0", fontSize: 15, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{l.note}</p>
       </div>
     );
   }

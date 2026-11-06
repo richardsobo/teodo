@@ -11,10 +11,9 @@ import type { Category } from "@/lib/types";
 
 export function useCategoryCounts() {
   const { listings, categories } = useStore();
-  const active = listings.filter((l) => l.status !== "archived");
+  const active = listings;
   return {
     all: active.length,
-    archive: listings.filter((l) => l.status === "archived").length,
     none: active.filter((l) => !l.categoryId || !categories.some((c) => c.id === l.categoryId)).length,
     by: (id: string) => active.filter((l) => l.categoryId === id).length,
   };
@@ -83,12 +82,6 @@ export function CategoryNav() {
             {categories.map((c) => item(c.id, c.name, counts.by(c.id)))}
             {counts.none > 0 && item("none", "Bez kategórie", counts.none)}
             <NewCategoryInline />
-            {counts.archive > 0 && (
-              <>
-                <hr className="divider" style={{ margin: "10px 12px", width: "auto" }} />
-                {item("archive", "Archív", counts.archive, <Icon name="archive" size="s" />)}
-              </>
-            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -103,6 +96,11 @@ export function NewCategoryInline({ onCreated, asPill }: { onCreated?: (id: stri
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
 
+  const cancel = () => {
+    setOpen(false);
+    setName("");
+    setError(null);
+  };
   const submit = () => {
     const err = validateCategoryName(name, categories);
     if (err) return setError(err);
@@ -146,13 +144,22 @@ export function NewCategoryInline({ onCreated, asPill }: { onCreated?: (id: stri
             }
             if (e.key === "Escape") {
               e.stopPropagation();
-              setOpen(false);
-              setName("");
+              cancel();
             }
           }}
         />
-        <button type="button" className="btn btn-primary btn-sm" style={{ height: 30 }} onClick={submit}>
+        <button type="button" className="btn btn-primary btn-sm" style={{ height: 30, flex: "none" }} onClick={submit}>
           Pridať
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost btn-icon btn-sm"
+          aria-label="Zrušiť novú kategóriu"
+          title="Zrušiť"
+          onClick={cancel}
+          style={{ width: 30, height: 30, flex: "none" }}
+        >
+          <Icon name="close" size="s" />
         </button>
       </div>
       <FieldError>{error}</FieldError>
@@ -206,7 +213,7 @@ export function CategoryEditor() {
       </Reorder.Group>
       <NewCategoryInline />
       <p className="faint" style={{ margin: "10px 12px 0", fontSize: 12, lineHeight: 1.5 }}>
-        Poradie zmeníš potiahnutím za úchyt. Zmazaním kategórie sa inzeráty nezmažú.
+        Poradie zmeníš potiahnutím za úchyt. Pozor, zmazaním kategórie zmažeš aj inzeráty v nej.
       </p>
     </div>
   );
@@ -225,7 +232,7 @@ function EditableCategory({
   first: boolean;
   last: boolean;
 }) {
-  const { categories, renameCategory, deleteCategory } = useStore();
+  const { categories, listings, renameCategory, deleteCategory } = useStore();
   const ui = useUI();
   const toast = useToast();
   const counts = useCategoryCounts();
@@ -234,6 +241,7 @@ function EditableCategory({
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState(false);
   const n = counts.by(category.id);
+  const inCat = listings.filter((l) => l.categoryId === category.id);
 
   const commit = () => {
     if (name.trim() === category.name) return;
@@ -308,11 +316,32 @@ function EditableCategory({
       <FieldError>{error}</FieldError>
 
       <Dialog open={confirm} onClose={() => setConfirm(false)} title={`Zmazať kategóriu „${category.name}“?`} z={80}>
-        <p className="muted" style={{ margin: "0 0 20px", fontSize: 14, lineHeight: 1.6 }}>
-          {n > 0
-            ? `${n} ${plural(n, "inzerát", "inzeráty", "inzerátov")} z tejto kategórie nezmažeme – nájdeš ${plural(n, "ho", "ich", "ich")} vo Všetkých inzerátoch medzi inzerátmi bez kategórie.`
-            : "Kategória je prázdna."}
-        </p>
+        {n > 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
+            <div className="notice" style={{ background: "rgba(255,122,122,.1)" }}>
+              <Icon name="alert" size="s" style={{ color: "var(--danger)", marginTop: 2 }} />
+              <span>
+                Spolu s kategóriou natrvalo zmažeme aj{" "}
+                <strong>
+                  {n} {plural(n, "inzerát", "inzeráty", "inzerátov")}
+                </strong>{" "}
+                v nej, vrátane histórie cien a poznámok. Toto sa nedá vrátiť.
+              </span>
+            </div>
+            <ul className="muted" style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, lineHeight: 1.7 }}>
+              {inCat.slice(0, 3).map((l) => (
+                <li key={l.id} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {l.title}
+                </li>
+              ))}
+              {n > 3 && <li>a {n - 3} ďalšie</li>}
+            </ul>
+          </div>
+        ) : (
+          <p className="muted" style={{ margin: "0 0 20px", fontSize: 14, lineHeight: 1.6 }}>
+            Kategória je prázdna, nič iné sa nezmaže.
+          </p>
+        )}
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
           <button className="btn btn-ghost" onClick={() => setConfirm(false)}>
             Ponechať
@@ -323,11 +352,16 @@ function EditableCategory({
               deleteCategory(category.id);
               if (ui.category === category.id) ui.setCategory("all");
               setConfirm(false);
-              toast.show({ text: `Kategória „${category.name}“ je zmazaná.` });
+              toast.show({
+                text:
+                  n > 0
+                    ? `Kategória „${category.name}“ aj ${n} ${plural(n, "inzerát", "inzeráty", "inzerátov")} sú zmazané.`
+                    : `Kategória „${category.name}“ je zmazaná.`,
+              });
             }}
           >
             <Icon name="trash" size="s" />
-            Zmazať kategóriu
+            {n > 0 ? `Zmazať aj ${n} ${plural(n, "inzerát", "inzeráty", "inzerátov")}` : "Zmazať kategóriu"}
           </button>
         </div>
       </Dialog>
@@ -352,7 +386,6 @@ export function CategoryPills() {
         {pill("all", "Všetky")}
         {categories.map((c) => pill(c.id, c.name))}
         {counts.none > 0 && pill("none", "Bez kategórie")}
-        {counts.archive > 0 && pill("archive", `Archív · ${counts.archive}`)}
         <button className="pill dashed" onClick={() => setManage(true)}>
           <Icon name="edit" size="s" style={{ width: 14, height: 14 }} />
           Upraviť

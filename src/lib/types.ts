@@ -29,8 +29,7 @@ export interface PricePoint {
   price: number;
 }
 
-export type ListingStatus = "pending" | "active" | "removed" | "archived";
-export type ArchiveReason = "bought" | "not-interested";
+export type ListingStatus = "pending" | "active" | "removed";
 
 export interface ListingNotify {
   /** upozorniť pri každej zmene ceny a pri zmazaní (predvolene áno) */
@@ -52,7 +51,6 @@ export interface Listing {
   location: string | null;
   categoryId: string | null;
   status: ListingStatus;
-  archiveReason?: ArchiveReason;
   addedAt: string;
   lastCheckedAt: string | null;
   removedAt?: string;

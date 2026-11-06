@@ -14,7 +14,7 @@ interface UIState {
   setSort(s: SortKey): void;
   stateFilter: StateFilter;
   setStateFilter(s: StateFilter): void;
-  /** "all" | "archive" | "none" (bez kategórie) | id kategórie */
+  /** "all" | "none" (bez kategórie) | id kategórie */
   category: string;
   setCategory(c: string): void;
 }

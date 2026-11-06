@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import type { AppNotification, ArchiveReason, Category, Listing, NotificationSettings, User } from "./types";
+import type { AppNotification, Category, Listing, NotificationSettings, User } from "./types";
 import { DEMO_ACCOUNT, DEMO_CATEGORIES, buildDemoListings, buildDemoNotifications, daysAgoIso } from "./demo-data";
 
 /**
@@ -34,7 +34,7 @@ interface PersistedState {
   cookieConsent: CookieConsent | null;
 }
 
-const KEY = "teodo:v1";
+const KEY = "teodo:v2";
 
 function initialState(): PersistedState {
   const listings = buildDemoListings();
@@ -74,8 +74,8 @@ export interface Store extends PersistedState {
   addListing(l: Listing): void;
   updateListing(id: string, patch: Partial<Listing>): void;
   removeListing(id: string): void;
-  archiveListing(id: string, reason: ArchiveReason): void;
-  restoreListing(id: string): void;
+  /** vráti späť práve odstránený inzerát (tlačidlo „Späť“ v hlásení) */
+  restoreListing(l: Listing): void;
   markSeen(id: string): void;
   isNew(l: Listing): boolean;
   /* --- upozornenia --- */
@@ -210,10 +210,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         patch((s) => ({ categories: s.categories.map((c) => (c.id === id ? { ...c, name: name.trim() } : c)) }));
       },
       deleteCategory(id) {
-        patch((s) => ({
-          categories: s.categories.filter((c) => c.id !== id),
-          listings: s.listings.map((l) => (l.categoryId === id ? { ...l, categoryId: null } : l)),
-        }));
+        // spolu s kategóriou natrvalo zmažeme aj jej inzeráty
+        patch((s) => {
+          const gone = new Set(s.listings.filter((l) => l.categoryId === id).map((l) => l.id));
+          return {
+            categories: s.categories.filter((c) => c.id !== id),
+            listings: s.listings.filter((l) => !gone.has(l.id)),
+            notifications: s.notifications.filter((n) => !gone.has(n.listingId)),
+          };
+        });
       },
       reorderCategories(ids) {
         patch((s) => ({ categories: ids.map((id) => s.categories.find((c) => c.id === id)!).filter(Boolean) }));
@@ -228,13 +233,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       removeListing(id) {
         patch((s) => ({ listings: s.listings.filter((l) => l.id !== id), notifications: s.notifications.filter((n) => n.listingId !== id) }));
       },
-      archiveListing(id, reason) {
-        patch((s) => ({ listings: s.listings.map((l) => (l.id === id ? { ...l, status: "archived", archiveReason: reason } : l)) }));
-      },
-      restoreListing(id) {
-        patch((s) => ({
-          listings: s.listings.map((l) => (l.id === id ? { ...l, status: l.removedAt ? "removed" : "active", archiveReason: undefined } : l)),
-        }));
+      restoreListing(l) {
+        patch((s) => ({ listings: s.listings.some((x) => x.id === l.id) ? s.listings : [l, ...s.listings] }));
       },
       markSeen(id) {
         patch((s) => ({ seen: { ...s.seen, [id]: new Date().toISOString() } }));
@@ -263,7 +263,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const isNew = useCallback(
     (l: Listing) => {
       const changed = l.removedAt ?? (l.history.length > 1 ? l.history.at(-1)!.at : null);
-      if (!changed || l.status === "archived") return false;
+      if (!changed) return false;
       const since = state.seen[l.id] ?? state.lastVisitAt;
       return changed > since;
     },

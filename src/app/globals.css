@@ -1248,33 +1248,6 @@ input[type="search"]::-webkit-search-cancel-button {
   background: var(--bg-2);
   touch-action: pan-y;
 }
-.gallery-thumbs {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.gallery-thumbs button {
-  flex: none;
-  width: 64px;
-  height: 48px;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 2px solid transparent;
-  padding: 0;
-  background: none;
-  opacity: 0.55;
-  transition:
-    opacity 0.2s,
-    border-color 0.2s;
-}
-.gallery-thumbs button[aria-current="true"] {
-  border-color: var(--link);
-  opacity: 1;
-}
-.gallery-thumbs button:hover {
-  opacity: 1;
-}
 .photo-btn {
   background: rgba(8, 10, 14, 0.62);
   color: #fff;
@@ -1335,9 +1308,6 @@ input[type="search"]::-webkit-search-cancel-button {
   .gallery-main {
     border-radius: 0;
     aspect-ratio: 390 / 290;
-  }
-  .gallery-thumbs {
-    display: none;
   }
   .detail-info,
   .detail-more {
@@ -1469,4 +1439,30 @@ input[type="search"]::-webkit-search-cancel-button {
   width: 18px;
   height: 18px;
   flex: none;
+}
+.desc-wrap {
+  position: relative;
+  overflow: hidden;
+  transition: height 0.45s var(--ease);
+}
+.desc-wrap[data-open="false"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 22px;
+  background: linear-gradient(to bottom, rgba(30, 34, 44, 0), rgba(30, 34, 44, 0.9));
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+@media (max-width: 719px) {
+  .desc-wrap[data-open="false"]::after {
+    background: linear-gradient(to bottom, rgba(16, 18, 23, 0), var(--bg));
+  }
+}
+.note-box {
+  padding: 12px 16px 14px;
+  border-radius: 14px;
+  background: rgba(77, 127, 238, 0.08);
 }
