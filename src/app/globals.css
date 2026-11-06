@@ -1820,3 +1820,85 @@ body {
     );
   }
 }
+
+/* ---------- Kolo 4 ---------- */
+/* popis + poznámka v jednej podfarbenej karte */
+.info-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--line);
+  margin-top: 8px;
+}
+.note-add {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--link);
+  font-weight: 600;
+  font-size: 14px;
+  text-align: left;
+}
+.note-add:hover {
+  color: var(--link-hover);
+}
+/* zbalený popis bledne do stratena bez ohľadu na farbu pozadia */
+.desc-wrap[data-open="false"]::after {
+  display: none;
+}
+.desc-wrap[data-open="false"] {
+  -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent);
+  mask-image: linear-gradient(to bottom, #000 40%, transparent);
+}
+
+/* Zobraziť inzerát: na počítači bežná veľkosť, na mobile veľké */
+@media (max-width: 719px) {
+  .detail-cta {
+    height: 52px;
+    border-radius: 14px;
+    font-size: 16px;
+  }
+}
+
+/* otvorené tlačidlá (zvonček, účet, filter) ostanú zvýraznené */
+.btn-ghost[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+}
+.btn-soft[aria-expanded="true"] {
+  background: rgba(42, 99, 219, 0.28);
+  color: #fff;
+}
+.avatar[aria-expanded="true"] {
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--link);
+}
+.photo-btn[aria-expanded="true"] {
+  background: rgba(42, 99, 219, 0.7);
+}
+
+/* väčší odstup sekcie „Ďalšie v kategórii“ */
+.detail-more.others {
+  margin-top: 32px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+@media (max-width: 719px) {
+  .detail-more.others {
+    margin-top: 12px;
+    padding-top: 28px;
+    margin-left: 20px;
+    margin-right: 20px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}

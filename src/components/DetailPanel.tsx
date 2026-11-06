@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Icon } from "./Icon";
-import { ListingCard } from "./ListingCard";
+import { ListingCard, TargetReachedChip } from "./ListingCard";
 import { EditListingDialog, NotifySettings } from "./ListingDialogs";
 import { PriceChart } from "./PriceChart";
 import { Dialog, Img, Popover, useEscape, useIsMobile, useScrollLock } from "./ui";
@@ -276,7 +276,7 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
               </div>
             )}
 
-            <a className="btn btn-primary btn-lg detail-cta" href={l.url} target="_blank" rel="noopener noreferrer">
+            <a className="btn btn-primary detail-cta" href={l.url} target="_blank" rel="noopener noreferrer">
               <Icon name="external" size="s" />
               Zobraziť inzerát
             </a>
@@ -313,19 +313,25 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
               </section>
             )}
 
-            {l.description && (
-              <section style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
-                <h2 className="h2">Popis</h2>
-                <Description text={l.description} />
-              </section>
-            )}
-
-            <Note l={l} />
+            <section className="info-card" aria-label="Popis a poznámka">
+              {l.description && (
+                <>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <h2 className="cap" style={{ margin: 0 }}>
+                      Popis z inzerátu
+                    </h2>
+                    <Description text={l.description} />
+                  </div>
+                  <hr className="divider" />
+                </>
+              )}
+              <Note l={l} />
+            </section>
           </div>
         </div>
 
         {others.length > 0 && category && (
-          <section className="detail-more" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <section className="detail-more others" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h2 className="h2">Ďalšie v kategórii {category.name}</h2>
               <Link className="link" href="/prehlad" scroll={false} onClick={() => ui.setCategory(category.id)} style={{ fontSize: 14 }}>
@@ -509,21 +515,22 @@ function Note({ l }: { l: Listing }) {
 
   if (!editing && !l.note) {
     return (
-      <div style={{ display: "flex", alignItems: "center", padding: "6px 8px", borderRadius: 12, background: "rgba(77,127,238,.08)" }}>
-        <button className="btn btn-ghost btn-sm" style={{ color: "var(--link)" }} onClick={() => setEditing(true)}>
-          <Icon name="plus" size="s" />
-          Pridať poznámku
-        </button>
-      </div>
+      <button className="note-add" onClick={() => setEditing(true)}>
+        <Icon name="plus" size="s" />
+        Pridať poznámku
+        <span className="faint only-desktop" style={{ fontWeight: 500, fontSize: 13 }}>
+          – len pre teba, napr. dohoda s predajcom
+        </span>
+      </button>
     );
   }
   if (!editing) {
     return (
-      <div className="note-box">
+      <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, minHeight: 28 }}>
-          <span className="cap" style={{ color: "var(--link)" }}>
-            Poznámka
-          </span>
+          <h2 className="cap" style={{ margin: 0, color: "var(--link)" }}>
+            Moja poznámka
+          </h2>
           <button className="btn btn-ghost btn-sm" onClick={() => setEditing(true)} style={{ height: 28, marginRight: -8 }}>
             Upraviť
           </button>
@@ -534,8 +541,8 @@ function Note({ l }: { l: Listing }) {
   }
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <label className="label" htmlFor="note" style={{ margin: 0 }}>
-        Poznámka
+      <label className="cap" htmlFor="note" style={{ color: "var(--link)" }}>
+        Moja poznámka
       </label>
       <div className="field textarea">
         <textarea
@@ -569,26 +576,5 @@ function Note({ l }: { l: Listing }) {
         </button>
       </div>
     </div>
-  );
-}
-
-function TargetReachedChip() {
-  return (
-    <span className="chip chip-target">
-      <svg
-        viewBox="0 0 24 24"
-        width="12"
-        height="12"
-        fill="none"
-        stroke="#fff"
-        strokeWidth="3.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 12l5 5 9-10" />
-      </svg>
-      Cieľ dosiahnutý
-    </span>
   );
 }

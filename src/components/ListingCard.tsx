@@ -16,7 +16,7 @@ function Chips({ l }: { l: Listing }) {
       ) : c.kind === "pending" ? null : (
         <span className={`chip ${chipClass(c.kind)}`}>{changeLabel(l, c)}</span>
       )}
-      {reached && <span className="chip chip-target">Cieľ dosiahnutý</span>}
+      {reached && <TargetReachedChip />}
       {l.source.support === "manual" && l.status === "active" && <span className="chip chip-soft">Ručne</span>}
       {l.checkError && l.status === "active" && (
         <span className="chip chip-warn" title={l.checkError}>
@@ -89,5 +89,26 @@ export function ListingCard({ l, isNew }: { l: Listing; isNew: boolean }) {
         <TargetLine l={l} />
       </div>
     </Link>
+  );
+}
+
+export function TargetReachedChip() {
+  return (
+    <span className="chip chip-target">
+      <svg
+        viewBox="0 0 24 24"
+        width="12"
+        height="12"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M5 12l5 5 9-10" />
+      </svg>
+      Cieľ dosiahnutý
+    </span>
   );
 }

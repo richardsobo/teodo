@@ -1,5 +1,7 @@
 import { Board } from "@/components/Board";
+import { Suspense } from "react";
 import { Footer } from "@/components/Footer";
+import { Overlays } from "./Overlays";
 
 /**
  * Prehľad zostáva vykreslený pod detailom aj pod pridaním inzerátu,
@@ -13,6 +15,9 @@ export default function BoardLayout({ children }: { children: React.ReactNode })
       </main>
       <Footer />
       {children}
+      <Suspense>
+        <Overlays />
+      </Suspense>
     </>
   );
 }

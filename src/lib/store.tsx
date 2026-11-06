@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { AppNotification, Category, Listing, NotificationSettings, User } from "./types";
+import { priceChange } from "./format";
 import { DEMO_ACCOUNT, DEMO_CATEGORIES, buildDemoListings, buildDemoNotifications, daysAgoIso } from "./demo-data";
 
 /**
@@ -260,10 +261,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [state.accounts, state.user, state.cookieConsent, patch],
   );
 
+  /**
+   * Zvýraznenie (modrý okraj a bodka) má inzerát, ktorý:
+   *  - zlacnel za posledných 24 hodín (ostáva zvýraznený aj po otvorení), alebo
+   *  - sa zmenil od tvojej poslednej návštevy a ešte si ho neotvoril.
+   */
   const isNew = useCallback(
     (l: Listing) => {
+      if (l.status === "pending") return false;
       const changed = l.removedAt ?? (l.history.length > 1 ? l.history.at(-1)!.at : null);
       if (!changed) return false;
+      const c = priceChange(l);
+      if (c.kind === "down" && Date.now() - new Date(changed).getTime() < 24 * 3_600_000) return true;
       const since = state.seen[l.id] ?? state.lastVisitAt;
       return changed > since;
     },

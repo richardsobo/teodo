@@ -1,6 +1,4 @@
-import { DetailPanel } from "@/components/DetailPanel";
-
-export default async function ListingDetail({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  return <DetailPanel key={id} id={id} />;
+// Detail vykresľuje <Overlays /> v layoute podľa adresy – táto stránka len zabezpečí URL.
+export default function ListingDetail() {
+  return null;
 }
