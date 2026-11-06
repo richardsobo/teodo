@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "./Icon";
+import { Logo } from "./Logo";
 import { NotificationsList } from "./NotificationsList";
 import { Dialog, Popover, useIsMobile } from "./ui";
 import { useStore } from "@/lib/store";
@@ -70,7 +71,7 @@ export function Header() {
       <div className="hdr-blur" aria-hidden="true" />
       <div className="t-wrap" style={{ position: "relative", height: "var(--header-h)", display: "flex", alignItems: "center", gap: 16 }}>
         <Link className="logo header-logo" href={user ? "/prehlad" : "/"} aria-label="Teodo – domov">
-          teodo<b>.</b>
+          <Logo />
         </Link>
 
         {/* desktop: tlačidlo a vyhľadávanie */}
@@ -287,7 +288,7 @@ export function HeaderFallback() {
     <header className="site-header">
       <div className="t-wrap" style={{ height: "var(--header-h)", display: "flex", alignItems: "center" }}>
         <span className="logo header-logo">
-          teodo<b>.</b>
+          <Logo />
         </span>
       </div>
     </header>

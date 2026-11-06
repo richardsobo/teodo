@@ -1466,3 +1466,23 @@ input[type="search"]::-webkit-search-cancel-button {
   border-radius: 14px;
   background: rgba(77, 127, 238, 0.08);
 }
+
+/* ---------- Logo (SVG) ---------- */
+.logo {
+  display: inline-flex;
+  align-items: center;
+}
+.logo-svg {
+  display: block;
+  height: 50px;
+  width: auto;
+  overflow: visible;
+}
+.logo-footer .logo-svg {
+  height: 38px;
+}
+@media (max-width: 719px) {
+  .header-logo .logo-svg {
+    height: 44px;
+  }
+}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "./Logo";
 
 export function Footer() {
   return (
@@ -16,8 +17,8 @@ export function Footer() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <Link className="logo" href="/" style={{ fontSize: 20 }}>
-              teodo<b>.</b>
+            <Link className="logo logo-footer" href="/" aria-label="Teodo – úvod">
+              <Logo />
             </Link>
             <span className="faint" style={{ fontSize: 13 }}>
               © 2026

@@ -80,6 +80,8 @@ scripts/gen-demo-images.mjs   ukážkové ilustrácie do public/demo
 
 ## Dizajn
 
+Logo: `public/teodo-logo.svg` (komponent `src/components/Logo.tsx`), ikona aplikácie: `src/app/icon.svg` (z nej favicon, apple-icon a PWA ikony).
+
 Podľa odsúhlaseného plátna „Teodo – návrh webu“: tmavé pozadie `#101217` s jemnou modrou žiarou, primárna modrá `#2A63DB`, odkazy `#4D7FEE`, iba font Plus Jakarta Sans, štítky mätová (pokles) / broskyňová (nárast) / sivá (odstránený). Sklo a rozmazanie len na plávajúcich prvkoch. Hlavička je na vrchu bez pozadia, pri scrollovaní nadol sa skryje a pri scrollovaní nahor sa vráti s tmavým rozmazaným prechodom.
 
 ## Neskôr
