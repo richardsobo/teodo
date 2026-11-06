@@ -300,7 +300,7 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
                     </span>
                   )}
                 </div>
-                <PriceChart history={l.history} currency={l.currency} target={removed ? null : l.notify.target} until={l.removedAt} compact={mobile} />
+                <PriceChart history={l.history} currency={l.currency} target={removed ? null : l.notify.target} until={l.removedAt} />
                 <History l={l} />
                 <span className="faint" style={{ fontSize: 12.5, marginTop: -4 }}>
                   {l.lastCheckedAt
@@ -531,9 +531,6 @@ function Note({ l }: { l: Listing }) {
       <button className="note-add note-block" onClick={() => setEditing(true)}>
         <Icon name="plus" size="s" />
         Pridať poznámku
-        <span className="faint only-desktop" style={{ fontWeight: 500, fontSize: 13 }}>
-          – len pre teba, napr. dohoda s predajcom
-        </span>
       </button>
     );
   }

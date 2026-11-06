@@ -2012,3 +2012,24 @@ body {
 .desc-section + .note-add {
   margin-top: 24px;
 }
+
+/* ---------- Graf (kolo 7) ---------- */
+.price-chart {
+  position: relative;
+  width: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.chart-card {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 128px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  pointer-events: none;
+  animation: fade 0.15s ease both;
+  white-space: nowrap;
+}
