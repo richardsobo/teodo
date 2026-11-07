@@ -17,23 +17,10 @@ const TOP = 18;
 const BOTTOM = 34; // miesto na dátumy
 const FONT = 12;
 
-/** „Pekné“ hodnoty na osi cien (napr. po 500 alebo 1 000). */
-function niceTicks(min: number, max: number, count: number): number[] {
-  const span = max - min || Math.abs(max) || 1;
-  const raw = span / count;
-  const pow = 10 ** Math.floor(Math.log10(raw));
-  const step = [1, 2, 2.5, 5, 10].map((m) => m * pow).find((s) => s >= raw) ?? 10 * pow;
-  const lo = Math.floor(min / step) * step;
-  const hi = Math.ceil(max / step) * step;
-  const out: number[] = [];
-  for (let v = lo; v <= hi + step / 2; v += step) out.push(Math.round(v * 100) / 100);
-  return out;
-}
-
 /**
- * Graf vývoja ceny. Kreslí sa v skutočnej šírke (nie zmenšením), takže písmo
- * je rovnako čitateľné na mobile aj na počítači. Cena platí, kým sa nezmení
- * (schodová čiara). Bod sa dá vybrať myšou aj ťuknutím.
+ * Graf vývoja ceny (desktop). Kreslí sa v skutočnej šírke, takže písmo
+ * ostáva čitateľné. Na osiach sú len skutočné ceny a dátumy zmien,
+ * cieľová cena je modrou na osi cien. Cena platí, kým sa nezmení (schodová čiara).
  */
 export function PriceChart({ history, currency, target, until }: Props) {
   const gid = useId().replace(/:/g, "");
@@ -54,29 +41,42 @@ export function PriceChart({ history, currency, target, until }: Props) {
     if (!W) return null;
     const start = new Date(history[0].at).getTime();
     const end = Math.max(until ? new Date(until).getTime() : now, start + 86_400_000);
+
     const values = history.map((p) => p.price).concat(target != null ? [target] : []);
-    const ticks = niceTicks(Math.min(...values), Math.max(...values), 4);
-    const yMin = ticks[0];
-    const yMax = ticks[ticks.length - 1];
-    // šírka popisov osi podľa najdlhšej ceny
-    const labelW = Math.max(...ticks.map((t) => formatPrice(t, currency).length)) * FONT * 0.58 + 10;
-    const left = labelW;
+    let yMin = Math.min(...values);
+    let yMax = Math.max(...values);
+    const pad = (yMax - yMin || yMax * 0.1 || 1) * 0.12;
+    yMin -= pad;
+    yMax += pad;
+    const y = (v: number) => TOP + (1 - (v - yMin) / (yMax - yMin)) * (H - TOP - BOTTOM);
+
+    // os cien: len skutočné ceny (+ cieľ modrou), bez prekrývania; prednosť má cieľ, aktuálna a prvá cena
+    const ticks: Array<{ v: number; target?: boolean }> = target != null ? [{ v: target, target: true }] : [];
+    for (const v of [history.at(-1)!.price, history[0].price, ...history.map((p) => p.price)]) {
+      if (ticks.some((t) => !t.target && t.v === v)) continue;
+      if (ticks.some((t) => Math.abs(y(t.v) - y(v)) < 16)) continue;
+      ticks.push({ v });
+    }
+
+    const left = Math.max(...ticks.map((t) => formatPrice(t.v, currency).length)) * FONT * 0.58 + 12;
     const right = W - 14;
-    const x = (t: number) => left + 8 + ((t - start) / (end - start)) * (right - left - 16);
-    const y = (v: number) => TOP + (1 - (v - yMin) / (yMax - yMin || 1)) * (H - TOP - BOTTOM);
+    const x = (t: number) => left + 10 + ((t - start) / (end - start)) * (right - left - 20);
     const pts = history.map((p, i) => ({ x: x(new Date(p.at).getTime()), y: y(p.price), p, diff: i ? p.price - history[i - 1].price : 0 }));
     let d = `M${pts[0].x} ${pts[0].y}`;
     for (let i = 1; i < pts.length; i++) d += `H${pts[i].x}V${pts[i].y}`;
-    const endX = x(end);
-    d += `H${endX}`;
+    d += `H${x(end)}`;
     const area = `${d}V${H - BOTTOM}H${pts[0].x}Z`;
-    // dátumy na osi: rovnomerne, 3 na mobile, 4 inak
-    const n = W < 480 ? 3 : 4;
-    const dates = Array.from({ length: n }, (_, i) => start + ((end - start) * i) / (n - 1)).map((t, i) => ({
-      x: x(t),
-      text: i === n - 1 && !until ? "dnes" : formatShortDate(new Date(t).toISOString()),
-    }));
-    return { ticks, y, pts, d, area, left, right, endX, dates };
+
+    // os dátumov: len dátumy zmien, bez prekrývania (prednosť má najnovší a prvý)
+    const dateIdx: number[] = [];
+    for (const i of [pts.length - 1, 0, ...pts.map((_, k) => k)]) {
+      if (dateIdx.includes(i)) continue;
+      if (dateIdx.some((k) => Math.abs(pts[k].x - pts[i].x) < 58)) continue;
+      dateIdx.push(i);
+    }
+    const dates = dateIdx.map((i) => ({ x: pts[i].x, text: formatShortDate(pts[i].p.at) }));
+
+    return { ticks, y, pts, d, area, left, right, dates };
   }, [W, history, target, until, now, currency]);
 
   const label = `Vývoj ceny od ${formatPrice(history[0].price, currency)} po ${formatPrice(history.at(-1)!.price, currency)}${
@@ -111,42 +111,33 @@ export function PriceChart({ history, currency, target, until }: Props) {
               </clipPath>
             </defs>
 
-            {/* os cien */}
             {m.ticks.map((t) => (
-              <g key={t}>
-                <path d={`M${m.left} ${m.y(t)}H${m.right}`} stroke="rgba(255,255,255,.07)" />
-                <text x={m.left - 8} y={m.y(t) + 4} textAnchor="end" fill="#858DA0" fontSize={FONT} className="num">
-                  {formatPrice(t, currency)}
+              <g key={`${t.v}-${t.target ? "t" : "p"}`}>
+                {!t.target && <path d={`M${m.left} ${m.y(t.v)}H${m.right}`} stroke="rgba(255,255,255,.07)" />}
+                <text
+                  x={m.left - 8}
+                  y={m.y(t.v) + 4}
+                  textAnchor="end"
+                  fill={t.target ? "#6E96F2" : "#858DA0"}
+                  fontSize={FONT}
+                  fontWeight={t.target ? 600 : 400}
+                  className="num"
+                >
+                  {formatPrice(t.v, currency)}
                 </text>
               </g>
             ))}
 
-            {/* os dátumov */}
-            {m.dates.map((d, i) => (
-              <g key={i}>
+            {m.dates.map((d) => (
+              <g key={d.x}>
                 <path d={`M${d.x} ${H - BOTTOM}v5`} stroke="rgba(255,255,255,.2)" />
-                <text
-                  x={d.x}
-                  y={H - 12}
-                  textAnchor={i === 0 ? "start" : i === m.dates.length - 1 ? "end" : "middle"}
-                  dx={i === 0 ? -4 : i === m.dates.length - 1 ? 4 : 0}
-                  fill="#858DA0"
-                  fontSize={FONT}
-                >
+                <text x={d.x} y={H - 12} textAnchor="middle" fill="#858DA0" fontSize={FONT}>
                   {d.text}
                 </text>
               </g>
             ))}
 
-            {/* cieľová cena */}
-            {target != null && (
-              <g>
-                <path d={`M${m.left} ${m.y(target)}H${m.right}`} stroke="#4D7FEE" strokeOpacity=".8" strokeWidth="1.25" strokeDasharray="4 5" />
-                <text x={m.right} y={m.y(target) - 6} textAnchor="end" fill="#6E96F2" fontSize={FONT} fontWeight="600">
-                  Cieľ {formatPrice(target, currency)}
-                </text>
-              </g>
-            )}
+            {target != null && <path d={`M${m.left} ${m.y(target)}H${m.right}`} stroke="#4D7FEE" strokeOpacity=".8" strokeWidth="1.25" strokeDasharray="4 5" />}
 
             {a && <path d={`M${a.x} ${TOP - 6}V${H - BOTTOM}`} stroke="rgba(255,255,255,.28)" strokeDasharray="3 3" />}
 
@@ -173,7 +164,6 @@ export function PriceChart({ history, currency, target, until }: Props) {
               );
             })}
 
-            {/* výber bodu: myš (pohyb) aj prst (ťuknutie) */}
             <rect
               x={m.left}
               y="0"
@@ -192,13 +182,7 @@ export function PriceChart({ history, currency, target, until }: Props) {
           </svg>
 
           {a && (
-            <div
-              className="pop chart-card"
-              style={{
-                top: TOP,
-                ...(tipLeft ? { right: W - a.x + 14 } : { left: a.x + 14 }),
-              }}
-            >
+            <div className="pop chart-card" style={{ top: TOP, ...(tipLeft ? { right: W - a.x + 14 } : { left: a.x + 14 }) }}>
               <span className="faint" style={{ fontSize: 12 }}>
                 {formatDate(a.p.at)}
                 {active === 0 && " · pridané"}

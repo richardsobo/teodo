@@ -2033,3 +2033,9 @@ body {
   animation: fade 0.15s ease both;
   white-space: nowrap;
 }
+
+/* ---------- Kolo 8 ---------- */
+/* desktop: fotka v detaile sa posúva spolu s obsahom */
+.detail-gallery {
+  position: static;
+}

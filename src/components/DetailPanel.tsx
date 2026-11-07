@@ -266,7 +266,7 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
                     <span className="chip chip-off">Odstránený</span>
                   ) : c.totalDiff !== 0 ? (
                     <span className={`chip ${c.totalDiff < 0 ? "chip-down" : "chip-up"}`}>
-                      {c.totalDiff < 0 ? "↓" : "↑"} {formatPrice(Math.abs(c.totalDiff), l.currency)} · {Math.abs(c.totalPct)} %
+                      {c.totalDiff < 0 ? "↓" : "↑"} {formatPrice(Math.abs(c.totalDiff), l.currency)}
                     </span>
                   ) : (
                     l.history.length > 0 && <span className="chip chip-soft">Bez zmeny od pridania</span>
@@ -300,8 +300,11 @@ function Detail({ l, onClose }: { l: Listing; onClose: () => void }) {
                     </span>
                   )}
                 </div>
-                <PriceChart history={l.history} currency={l.currency} target={removed ? null : l.notify.target} until={l.removedAt} />
-                <History l={l} />
+                {mobile ? (
+                  <History l={l} />
+                ) : (
+                  <PriceChart history={l.history} currency={l.currency} target={removed ? null : l.notify.target} until={l.removedAt} />
+                )}
                 <span className="faint" style={{ fontSize: 12.5, marginTop: -4 }}>
                   {l.lastCheckedAt
                     ? `Naposledy skontrolované ${relativeTime(l.lastCheckedAt)}`
