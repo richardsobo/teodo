@@ -189,6 +189,7 @@ export function PriceChart({ history, currency, target, until }: Props) {
               <span className="faint" style={{ fontSize: 12 }}>
                 {formatDate(a.p.at)}
                 {active === 0 && " · pridané"}
+                {a.p.manual && " · upravené ručne"}
               </span>
               <strong className="num" style={{ fontSize: 16 }}>
                 {formatPrice(a.p.price, currency)}

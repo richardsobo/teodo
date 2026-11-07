@@ -27,6 +27,8 @@ export interface PricePoint {
   /** ISO dátum a čas kontroly, pri ktorej sa cena zistila */
   at: string;
   price: number;
+  /** cenu zadal používateľ ručne (oprava v úprave inzerátu) */
+  manual?: boolean;
 }
 
 export type ListingStatus = "pending" | "active" | "removed";

@@ -508,6 +508,7 @@ function History({ l }: { l: Listing }) {
             <span className="muted" style={{ flex: 1, fontSize: 14 }}>
               {formatDate(p.at)}
               {isFirst && " · pridané"}
+              {p.manual && " · upravené ručne"}
             </span>
             {diff !== 0 && (
               <span className={`num ${diff < 0 ? "t-down" : "t-up"}`} style={{ fontSize: 13, fontWeight: 600 }}>

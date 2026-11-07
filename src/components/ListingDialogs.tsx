@@ -111,14 +111,15 @@ export function EditListingDialog({ l, open, onClose }: { l: Listing; open: bool
     const u = parseListingUrl(url);
     if (!u.ok) er.url = u.error;
     const p = parseUserNumber(price);
-    if (manual && price && p == null) er.price = "Zadaj cenu číslom.";
+    if (price && p == null) er.price = "Zadaj cenu číslom, napr. 5 400.";
     setErrors(er);
     if (Object.keys(er).length || !u.ok) return;
     const urlChanged = u.url.href !== l.url;
     const patch: Partial<Listing> = { title: title.trim(), url: u.url.href, categoryId: categoryId || null };
-    if (manual && p != null && p !== l.price) {
+    const priceChanged = p != null && p !== l.price;
+    if (priceChanged) {
       patch.price = p;
-      patch.history = [...l.history, { at: new Date().toISOString(), price: p }];
+      patch.history = [...l.history, { at: new Date().toISOString(), price: p, manual: true }];
     }
     if (urlChanged && l.status === "removed") {
       patch.status = "active";
@@ -126,7 +127,13 @@ export function EditListingDialog({ l, open, onClose }: { l: Listing; open: bool
     }
     updateListing(l.id, patch);
     onClose();
-    toast.show({ text: urlChanged ? "Uložené. Nový odkaz skontrolujeme pri najbližšej kontrole, história ostáva." : "Zmeny sú uložené." });
+    toast.show({
+      text: urlChanged
+        ? "Uložené. Nový odkaz skontrolujeme pri najbližšej kontrole, história ostáva."
+        : priceChanged
+          ? "Cena je upravená a zapísaná do histórie."
+          : "Zmeny sú uložené.",
+    });
   };
 
   return (
@@ -142,7 +149,7 @@ export function EditListingDialog({ l, open, onClose }: { l: Listing; open: bool
             </div>
             <FieldError>{errors.title}</FieldError>
           </div>
-          {manual && (
+          {
             <div>
               <label className="label" htmlFor="e-price">
                 Cena
@@ -154,10 +161,14 @@ export function EditListingDialog({ l, open, onClose }: { l: Listing; open: bool
               {errors.price ? (
                 <FieldError>{errors.price}</FieldError>
               ) : (
-                <p className="field-hint">Tento web nevieme sledovať automaticky – zmenu ceny zapíšeme do histórie.</p>
+                <p className="field-hint">
+                  {manual
+                    ? "Tento web nevieme sledovať automaticky – zmenu ceny zapíšeme do histórie."
+                    : "Cenu kontrolujeme automaticky. Ak nesedí s inzerátom, oprav ju – zmenu zapíšeme do histórie."}
+                </p>
               )}
             </div>
-          )}
+          }
           <div>
             <label className="label" htmlFor="e-url">
               Odkaz na inzerát
