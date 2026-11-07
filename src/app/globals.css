@@ -782,7 +782,7 @@ img {
 }
 @media (min-width: 1024px) {
   .header-logo {
-    flex-basis: 248px;
+    flex-basis: 236px;
     margin-right: 0;
   }
 }

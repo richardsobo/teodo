@@ -52,6 +52,13 @@ function initialState(): PersistedState {
   };
 }
 
+/** Pri prihlásení ukážkového účtu s prázdnym zoznamom vrátime ukážkové inzeráty. */
+function withDemoData(s: PersistedState, email: string): Partial<PersistedState> {
+  if (email !== DEMO_ACCOUNT.email || s.listings.length > 0) return {};
+  const fresh = initialState();
+  return { listings: fresh.listings, categories: fresh.categories, notifications: fresh.notifications, lastVisitAt: fresh.lastVisitAt, seen: {} };
+}
+
 export type SignInResult = { ok: true } | { ok: false; error: string };
 
 export interface Store extends PersistedState {
@@ -122,8 +129,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     } catch {
       /* poškodené dáta – začneme odznova */
     }
+    // ukážkový účet musí existovať vždy (aj po zmazaní účtu v ukážke)
+    const initial = next ?? initialState();
+    if (!initial.accounts[DEMO_ACCOUNT.email]) {
+      initial.accounts = { ...initial.accounts, [DEMO_ACCOUNT.email]: { password: DEMO_ACCOUNT.password, name: DEMO_ACCOUNT.name } };
+    }
     // eslint-disable-next-line react-hooks/set-state-in-effect -- jednorazové načítanie po hydratácii
-    setState(next ?? initialState());
+    setState(initial);
     loaded.current = true;
     setReady(true);
   }, []);
@@ -149,16 +161,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       },
       async signIn(email, password) {
         await wait();
-        const acc = state.accounts[norm(email)];
-        if (!acc || acc.password !== password) return { ok: false, error: "Heslo nesedí. Skús to znova alebo si ho obnov." };
-        patch(() => ({ user: { email: norm(email), name: acc.name, provider: "email" } }));
+        const e = norm(email);
+        const acc = state.accounts[e];
+        const demoOk = e === DEMO_ACCOUNT.email && password === DEMO_ACCOUNT.password;
+        if (!demoOk && (!acc || acc.password !== password)) return { ok: false, error: "Heslo nesedí. Skús to znova alebo si ho obnov." };
+        patch((s) => ({ ...withDemoData(s, e), user: { email: e, name: acc?.name ?? DEMO_ACCOUNT.name, provider: "email" } }));
         return { ok: true };
       },
       async signUp(email, password) {
         await wait();
         const e = norm(email);
         const name = e.split("@")[0];
-        patch((s) => ({ accounts: { ...s.accounts, [e]: { password, name } }, user: { email: e, name, provider: "email" } }));
+        patch((s) => ({ ...withDemoData(s, e), accounts: { ...s.accounts, [e]: { password, name } }, user: { email: e, name, provider: "email" } }));
         return { ok: true };
       },
       async signInWithGoogle() {
