@@ -56,7 +56,7 @@ export function EmptyHero({ guest }: { guest: boolean }) {
         </div>
       </form>
       <p className="faint" style={{ margin: 0, fontSize: 13 }}>
-        Funguje s bazos.sk, bazos.cz, autobazar.eu aj väčšinou ďalších webov s inzerátmi · zadarmo
+        Funguje s väčšinou webov s inzerátmi · zadarmo
       </p>
 
       <ol className="hero-steps">

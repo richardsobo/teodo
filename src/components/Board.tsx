@@ -18,6 +18,7 @@ const SORTS: Array<[SortKey, string]> = [
   ["changed", "Naposledy zmenené"],
   ["added", "Naposledy pridané"],
   ["drop", "Najväčší pokles ceny"],
+  ["price", "Podľa ceny (od najnižšej)"],
   ["title", "Podľa názvu"],
 ];
 const STATES: Array<[StateFilter, string]> = [
@@ -74,6 +75,12 @@ export function Board() {
       if (b.status === "pending" && a.status !== "pending") return 1;
       if (ui.sort === "added") return b.addedAt.localeCompare(a.addedAt);
       if (ui.sort === "title") return a.title.localeCompare(b.title, "sk");
+      if (ui.sort === "price") {
+        // meny neprepočítavame: najprv €, potom ostatné meny, v rámci meny od najnižšej ceny
+        if (a.price == null || b.price == null) return a.price == null ? 1 : -1;
+        if (a.currency !== b.currency) return a.currency === "EUR" ? -1 : b.currency === "EUR" ? 1 : a.currency.localeCompare(b.currency);
+        return a.price - b.price;
+      }
       if (ui.sort === "drop") return priceChange(a).totalPct - priceChange(b).totalPct;
       // nové zmeny od poslednej návštevy navrch, odstránené až na koniec
       if (isNew(a) !== isNew(b)) return isNew(a) ? -1 : 1;

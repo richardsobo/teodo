@@ -205,19 +205,22 @@ export function AddListing() {
                   )}
                 </div>
                 <FieldError>
-                  {urlError}
-                  {dupId && (
-                    <button
-                      type="button"
-                      className="link"
-                      style={{ marginLeft: 4, fontSize: 13 }}
-                      onClick={() => router.push(`/inzerat/${dupId}`, { scroll: false })}
-                    >
-                      Otvoriť
-                    </button>
-                  )}
+                  {urlError ? (
+                    <>
+                      {urlError}
+                      {dupId && (
+                        <button
+                          type="button"
+                          className="link"
+                          style={{ marginLeft: 4, fontSize: 13 }}
+                          onClick={() => router.push(`/inzerat/${dupId}`, { scroll: false })}
+                        >
+                          Otvoriť
+                        </button>
+                      )}
+                    </>
+                  ) : null}
                 </FieldError>
-                {!urlError && <p className="field-hint">Najlepšie funguje s bazos.sk, bazos.cz a autobazar.eu. Ostatné weby skúsime načítať automaticky.</p>}
               </div>
               <div>
                 <span className="label">Kategória</span>

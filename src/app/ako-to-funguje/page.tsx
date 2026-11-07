@@ -14,7 +14,7 @@ const steps: Array<{ icon: IconName; title: string; text: string; demo?: React.R
   {
     icon: "link",
     title: "Vlož odkaz",
-    text: "Našiel si niečo zaujímavé? Skopíruj adresu inzerátu a vlož ju sem. Názov, fotky, cenu aj lokalitu načítame sami – z Bazoša, Autobazar.eu aj z väčšiny ďalších webov. Keď niečo nenájdeme, doplníš to ručne.",
+    text: "Našiel si niečo zaujímavé? Skopíruj adresu inzerátu a vlož ju sem. Názov, fotky, cenu aj lokalitu načítame sami z väčšiny webov s inzerátmi. Keď niečo nenájdeme, doplníš to ručne.",
     demo: (
       <div className="field" style={{ marginTop: 10, maxWidth: 460, paddingRight: 5, height: 46 }}>
         <span style={{ flex: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", color: "var(--text)" }}>
@@ -87,7 +87,7 @@ const faq = [
   ["Je Teodo zadarmo?", "Áno. Teodo je zatiaľ zadarmo."],
   [
     "Z ktorých webov to funguje?",
-    "Najlepšie z Bazoša (sk aj cz) a Autobazar.eu. Pri ostatných weboch čítame štandardné údaje, ktoré stránky zverejňujú pre vyhľadávače. Facebook zatiaľ nepodporujeme.",
+    "Z väčšiny webov s inzerátmi – bazárov, autobazárov aj e-shopov. Čítame štandardné údaje, ktoré stránky zverejňujú pre vyhľadávače, a pri známych weboch aj viac. Ak niečo nenájdeme, doplníš to ručne. Facebook zatiaľ nepodporujeme.",
   ],
   [
     "Čo keď inzerát zmizne?",

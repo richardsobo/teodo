@@ -2039,3 +2039,13 @@ body {
 .detail-gallery {
   position: static;
 }
+
+/* ---------- Kolo 9 ---------- */
+/* šípky v galérii až pri prechode myšou */
+.gallery-arrow {
+  opacity: 0;
+}
+.gallery-main:hover .gallery-arrow,
+.gallery-main:focus-within .gallery-arrow {
+  opacity: 1;
+}

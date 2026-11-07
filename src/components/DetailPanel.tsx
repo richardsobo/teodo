@@ -399,7 +399,7 @@ function Gallery({ images, title, dim }: { images: string[]; title: string; dim:
         {n > 1 && (
           <>
             <button
-              className="btn btn-icon photo-btn only-desktop"
+              className="btn btn-icon photo-btn only-desktop gallery-arrow"
               aria-label="Predchádzajúca fotka"
               onClick={() => go(-1)}
               style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", width: 34, height: 34 }}
@@ -407,7 +407,7 @@ function Gallery({ images, title, dim }: { images: string[]; title: string; dim:
               <Icon name="chevronLeft" size="s" />
             </button>
             <button
-              className="btn btn-icon photo-btn only-desktop"
+              className="btn btn-icon photo-btn only-desktop gallery-arrow"
               aria-label="Ďalšia fotka"
               onClick={() => go(1)}
               style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", width: 34, height: 34 }}

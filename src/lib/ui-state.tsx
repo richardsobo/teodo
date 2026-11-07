@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useMemo, useState } from "react";
 
-export type SortKey = "changed" | "added" | "drop" | "title";
+export type SortKey = "changed" | "added" | "drop" | "price" | "title";
 export type StateFilter = "all" | "down" | "up" | "none" | "removed";
 
 interface UIState {

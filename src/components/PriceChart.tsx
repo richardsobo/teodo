@@ -12,7 +12,8 @@ interface Props {
   until?: string;
 }
 
-const H = 230;
+const FULL_H = 230;
+const FLAT_H = 96; // cena sa ešte nemenila a nie je cieľ – stačí nízky pás
 const TOP = 18;
 const BOTTOM = 34; // miesto na dátumy
 const FONT = 12;
@@ -28,6 +29,8 @@ export function PriceChart({ history, currency, target, until }: Props) {
   const [W, setW] = useState(0);
   const [active, setActive] = useState<number | null>(null);
   const [now] = useState(() => Date.now());
+  const flat = target == null && new Set(history.map((p) => p.price)).size === 1;
+  const H = flat ? FLAT_H : FULL_H;
 
   useEffect(() => {
     const el = box.current;
@@ -48,7 +51,7 @@ export function PriceChart({ history, currency, target, until }: Props) {
     const pad = (yMax - yMin || yMax * 0.1 || 1) * 0.12;
     yMin -= pad;
     yMax += pad;
-    const y = (v: number) => TOP + (1 - (v - yMin) / (yMax - yMin)) * (H - TOP - BOTTOM);
+    const y = (v: number) => (flat ? TOP + 12 : TOP + (1 - (v - yMin) / (yMax - yMin)) * (H - TOP - BOTTOM));
 
     // os cien: len skutočné ceny (+ cieľ modrou), bez prekrývania; prednosť má cieľ, aktuálna a prvá cena
     const ticks: Array<{ v: number; target?: boolean }> = target != null ? [{ v: target, target: true }] : [];
@@ -77,7 +80,7 @@ export function PriceChart({ history, currency, target, until }: Props) {
     const dates = dateIdx.map((i) => ({ x: pts[i].x, text: formatShortDate(pts[i].p.at) }));
 
     return { ticks, y, pts, d, area, left, right, dates };
-  }, [W, history, target, until, now, currency]);
+  }, [W, history, target, until, now, currency, flat, H]);
 
   const label = `Vývoj ceny od ${formatPrice(history[0].price, currency)} po ${formatPrice(history.at(-1)!.price, currency)}${
     target != null ? `, cieľová cena ${formatPrice(target, currency)}` : ""
