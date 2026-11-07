@@ -2049,3 +2049,8 @@ body {
 .gallery-main:focus-within .gallery-arrow {
   opacity: 1;
 }
+
+/* detail: panel bez zaoblených rohov */
+.detail-panel {
+  border-radius: 0;
+}
