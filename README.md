@@ -42,6 +42,14 @@ Pri pridávaní inzerátu sa dajú vyskúšať všetky stavy:
 
 Všetko je responzívne (mobil / tablet / desktop). Na mobile: plávajúce „+“, panely zdola, vyhľadávanie pod lupou, v detaile plávajúce „Zobraziť inzerát“.
 
+## Google Analytics a cookies
+
+- GA4 sa zapína premennou `NEXT_PUBLIC_GA_ID` (vo Verceli: Settings → Environment Variables, potom Redeploy). Bez nej sa nenačíta nič.
+- Režim **basic consent mode**: skript Google sa načíta až po súhlase s analytikou. Reklamné signály sú vždy zamietnuté, Google Signals vypnuté, cookies `_ga` platia 13 mesiacov.
+- Cookie lišta má rovnako výrazné „Prijať všetky“ a „Odmietnuť“, nastavenia po kategóriách, súhlas platí 12 mesiacov a pri zmene zásad (`COOKIE_POLICY_VERSION` v `src/lib/legal.ts`) sa pýta znova. Zmeniť ho ide kedykoľvek cez „Nastavenia cookies“ v pätičke; po odvolaní sa `_ga` cookies zmažú.
+- V administrácii GA4 nastav uchovávanie údajov na 14 mesiacov (Admin → Data collection → Data retention), ako uvádzajú zásady.
+- Údaje prevádzkovateľa doplň v `src/lib/legal.ts` – nevyplnené polia sú na webe zvýraznené.
+
 ## Rozhodnutia
 
 - **Kontrola cien 2× denne: o 6:00 a 18:00** (Europe/Bratislava), na serveri rozložená do okna ±30 min, aby sme na jeden web neposlali všetky požiadavky naraz. Ranná kontrola zachytí zmeny z večera, upozornenie príde pred prácou; večerná zachytí zmeny cez deň. Konštanty sú v `src/lib/schedule.ts`.

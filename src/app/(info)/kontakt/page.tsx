@@ -5,12 +5,14 @@ import { AnimatePresence, motion } from "motion/react";
 import { Icon } from "@/components/Icon";
 import { FieldError } from "@/components/ui";
 import { useStore } from "@/lib/store";
+import Link from "next/link";
+import { OperatorBox } from "../OperatorBox";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export default function Contact() {
   const { user } = useStore();
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", message: "", topic: "Otázka", website: "" });
   const [errors, setErrors] = useState<Partial<Record<keyof typeof form, string>>>({});
   const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
 
@@ -29,6 +31,8 @@ export default function Contact() {
     if (form.message.trim().length < 10) er.message = "Správa je príliš krátka – napíš nám aspoň pár slov.";
     setErrors(er);
     if (Object.keys(er).length) return;
+    // pole „website“ vidia len roboty – ak je vyplnené, správu ticho zahodíme
+    if (form.website) return setState("sent");
     setState("sending");
     await new Promise((r) => setTimeout(r, 900)); // krok 2: odoslanie cez Resend
     setState("sent");
@@ -55,7 +59,7 @@ export default function Contact() {
           <button
             className="btn btn-soft"
             onClick={() => {
-              setForm({ name: "", email: "", message: "" });
+              setForm({ name: "", email: "", message: "", topic: "Otázka", website: "" });
               setState("idle");
             }}
           >
@@ -73,8 +77,28 @@ export default function Contact() {
               <a className="link" href="mailto:podpora@teodo.sk">
                 podpora@teodo.sk
               </a>
-              .
+              . Odpovedáme zvyčajne do dvoch pracovných dní.
             </p>
+          </div>
+          <div>
+            <span className="label">Téma</span>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {["Otázka", "Problém s webom", "Nápad na zlepšenie", "Osobné údaje"].map((t) => (
+                <button
+                  type="button"
+                  key={t}
+                  className={`pill${form.topic === t ? " on" : ""}`}
+                  aria-pressed={form.topic === t}
+                  onClick={() => setForm((f) => ({ ...f, topic: t }))}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div aria-hidden="true" style={{ position: "absolute", left: -9999, width: 1, height: 1, overflow: "hidden" }}>
+            <label htmlFor="c-web">Web</label>
+            <input id="c-web" tabIndex={-1} autoComplete="off" value={form.website} onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))} />
           </div>
           <div>
             <label className="label" htmlFor="c-name">
@@ -115,6 +139,19 @@ export default function Contact() {
             {state === "sending" ? <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> : <Icon name="send" size="s" />}
             Odoslať správu
           </button>
+          <p className="faint" style={{ margin: "-8px 0 0", fontSize: 12.5, lineHeight: 1.6 }}>
+            Meno, e-mail a správu použijeme len na odpoveď a uchováme ich 12 mesiacov. Viac v{" "}
+            <Link className="link" href="/ochrana-udajov">
+              ochrane osobných údajov
+            </Link>
+            .
+          </p>
+          <div style={{ marginTop: 12 }}>
+            <h2 className="h3" style={{ marginBottom: 10 }}>
+              Prevádzkovateľ
+            </h2>
+            <OperatorBox />
+          </div>
         </motion.form>
       )}
     </AnimatePresence>

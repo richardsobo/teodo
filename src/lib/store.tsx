@@ -17,7 +17,10 @@ interface Account {
 
 export interface CookieConsent {
   analytics: boolean;
+  /** kedy používateľ rozhodol (súhlas platí 12 mesiacov) */
   at: string;
+  /** verzia zásad cookies, s ktorou súhlasil */
+  v?: number;
 }
 
 interface PersistedState {

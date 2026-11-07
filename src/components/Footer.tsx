@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
+import { CookieSettingsLink } from "./CookieSettingsLink";
 
 export function Footer() {
   return (
@@ -29,6 +30,7 @@ export function Footer() {
             <Link href="/podmienky">Obchodné podmienky</Link>
             <Link href="/ochrana-udajov">Ochrana osobných údajov</Link>
             <Link href="/kontakt">Kontakt</Link>
+            <CookieSettingsLink />
           </nav>
         </div>
       </div>

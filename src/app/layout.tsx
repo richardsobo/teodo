@@ -5,6 +5,7 @@ import { UIProvider } from "@/lib/ui-state";
 import { Suspense } from "react";
 import { Header, HeaderFallback } from "@/components/Header";
 import { CookieBar } from "@/components/CookieBar";
+import { Analytics } from "@/components/Analytics";
 import { Toasts } from "@/components/ui";
 
 export const metadata: Metadata = {
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 {children}
               </div>
               <CookieBar />
+              <Analytics />
               <Toasts />
             </ToastProvider>
           </UIProvider>

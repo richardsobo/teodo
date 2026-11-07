@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/Footer";
 import { Icon, type IconName } from "@/components/Icon";
 import { HowCta } from "./HowCta";
+import { Faq } from "./Faq";
 
 export const metadata: Metadata = { title: "Ako to funguje?" };
 
@@ -83,7 +84,7 @@ const steps: Array<{ icon: IconName; title: string; text: string; demo?: React.R
   },
 ];
 
-const faq = [
+const faq: Array<[string, string]> = [
   ["Je Teodo zadarmo?", "Áno. Teodo je zatiaľ zadarmo."],
   [
     "Z ktorých webov to funguje?",
@@ -98,6 +99,10 @@ const faq = [
     "Bazáry nemajú radi časté automatické návštevy. Každý inzerát stiahneme len raz pri kontrole a rešpektujeme pravidlá webu (robots.txt). Pri ojazdenom aute či bicykli to na zachytenie zľavy úplne stačí.",
   ],
   ["V akej mene sú ceny?", "Vždy v tej, ktorá je v inzeráte – € alebo Kč. Nič neprepočítavame, aby ceny presne sedeli s bazárom."],
+  [
+    "Čo robíte s mojimi údajmi?",
+    "Ukladáme len to, čo Teodo potrebuje na fungovanie – tvoj e-mail, inzeráty a nastavenia. Nič nepredávame a nepoužívame na reklamu. Účet aj všetky údaje si môžeš kedykoľvek zmazať v nastaveniach.",
+  ],
 ];
 
 export default function HowItWorks() {
@@ -137,22 +142,9 @@ export default function HowItWorks() {
           </ol>
         </div>
 
-        <section className="t-wrap" style={{ paddingBottom: 80 }}>
-          <h2 className="h2" style={{ marginBottom: 12 }}>
-            Časté otázky
-          </h2>
-          <div className="faq">
-            {faq.map(([q, a]) => (
-              <details key={q}>
-                <summary>
-                  {q}
-                  <Icon name="chevronDown" size="s" />
-                </summary>
-                <p className="muted">{a}</p>
-              </details>
-            ))}
-          </div>
-        </section>
+        <div className="t-wrap" style={{ paddingBottom: 96 }}>
+          <Faq items={faq} />
+        </div>
       </main>
       <Footer />
     </>
